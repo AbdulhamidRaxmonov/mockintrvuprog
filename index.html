@@ -4,61 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MockInterview Pro — Frontend Developer Interview Platform</title>
-  <meta name="description" content="AI-powered mock interview platform for frontend developers. Practice HTML, CSS, JavaScript, React and more with voice AI." />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
+  <meta name="description" content="AI-powered mock interview platform for frontend developers." />
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- React + ReactDOM via CDN -->
+  <!-- React 18 -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-  <!-- Babel for JSX transpilation in browser -->
+  <!-- Babel Standalone -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-
   <style>
-    /* ===== CSS RESET & BASE ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --primary: #6C63FF;
-      --primary-dark: #5A52E0;
-      --primary-light: #8B85FF;
-      --secondary: #FF6584;
-      --accent: #43E97B;
-      --accent2: #38F9D7;
-      --bg-dark: #0A0B14;
-      --bg-card: #12131F;
-      --bg-card2: #1A1B2E;
-      --text-primary: #FFFFFF;
-      --text-secondary: #A0A3B1;
-      --text-muted: #6B6E82;
-      --border: #2A2B3D;
-      --success: #43E97B;
-      --error: #FF4D6A;
-      --warning: #FFB84D;
-      --info: #4DC3FF;
-      --gold: #FFD700;
-      --radius: 16px;
-      --radius-sm: 8px;
-      --radius-lg: 24px;
-      --shadow: 0 8px 32px rgba(108,99,255,0.15);
-      --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
+      --primary: #6C63FF; --primary-dark: #5A52E0; --primary-light: #8B85FF;
+      --secondary: #FF6584; --accent: #43E97B; --accent2: #38F9D7;
+      --bg-dark: #0A0B14; --bg-card: #12131F; --bg-card2: #1A1B2E;
+      --text-primary: #FFFFFF; --text-secondary: #A0A3B1; --text-muted: #6B6E82;
+      --border: #2A2B3D; --success: #43E97B; --error: #FF4D6A;
+      --warning: #FFB84D; --info: #4DC3FF; --gold: #FFD700;
       --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
     }
     html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-primary);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
     #root { min-height: 100vh; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-dark); }
@@ -68,6 +39,2604 @@
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel" src="src/app.jsx" data-type="module"></script>
+<script type="text/babel">
+// ============================================================
+// MockInterview Pro — Main App
+// ============================================================
+const { useState, useEffect, useRef, useCallback, createContext, useContext } = React;
+
+// ============================================================
+// GLOBAL STYLES
+// ============================================================
+const GlobalStyles = () => (
+  <style>{`
+    /* Animations */
+    @keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes slideIn { from { opacity:0; transform:translateX(-30px); } to { opacity:1; transform:translateX(0); } }
+    @keyframes pulse { 0%,100% { transform:scale(1); box-shadow:0 0 0 0 rgba(108,99,255,0.4); } 50% { transform:scale(1.05); box-shadow:0 0 0 20px rgba(108,99,255,0); } }
+    @keyframes ripple { 0% { transform:scale(0.8); opacity:1; } 100% { transform:scale(2); opacity:0; } }
+    @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+    @keyframes gradientShift { 0% { background-position:0% 50%; } 50% { background-position:100% 50%; } 100% { background-position:0% 50%; } }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes barAnim { 0%,100% { height:8px; } 50% { height:24px; } }
+    @keyframes glow { 0%,100% { box-shadow:0 0 20px rgba(108,99,255,0.3); } 50% { box-shadow:0 0 40px rgba(108,99,255,0.7); } }
+    @keyframes countUp { from { opacity:0; transform:scale(0.5); } to { opacity:1; transform:scale(1); } }
+    @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
+    @keyframes bounceIn { 0% { transform:scale(0); opacity:0; } 60% { transform:scale(1.1); opacity:1; } 100% { transform:scale(1); } }
+
+    /* Utility */
+    .animate-fadeIn { animation: fadeIn 0.6s ease forwards; }
+    .animate-slideIn { animation: slideIn 0.5s ease forwards; }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-pulse-btn { animation: pulse 2s infinite; }
+    .animate-glow { animation: glow 2s ease-in-out infinite; }
+    .animate-bounceIn { animation: bounceIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
+
+    /* Gradient text */
+    .gradient-text {
+      background: linear-gradient(135deg, #6C63FF 0%, #FF6584 50%, #43E97B 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s ease infinite;
+    }
+
+    /* Glass card */
+    .glass-card {
+      background: rgba(18,19,31,0.8);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, #6C63FF, #8B85FF);
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(108,99,255,0.4); }
+    .btn-primary:active { transform:translateY(0); }
+    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+    .btn-secondary {
+      background: rgba(108,99,255,0.1);
+      color: #8B85FF;
+      border: 1px solid rgba(108,99,255,0.3);
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary:hover { background:rgba(108,99,255,0.2); border-color:var(--primary); }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #FF4D6A, #FF6584);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-danger:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,77,106,0.4); }
+
+    .btn-success {
+      background: linear-gradient(135deg, #43E97B, #38F9D7);
+      color: #0A0B14;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-success:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(67,233,123,0.4); }
+
+    .btn-icon {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .btn-icon:hover { background:rgba(108,99,255,0.15); border-color:var(--primary); color:var(--primary); }
+
+    /* Input */
+    .input-field {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      width: 100%;
+      transition: var(--transition);
+      outline: none;
+    }
+    .input-field:focus { border-color: var(--primary); box-shadow:0 0 0 3px rgba(108,99,255,0.15); }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-junior { background:rgba(67,233,123,0.15); color:#43E97B; border:1px solid rgba(67,233,123,0.3); }
+    .badge-middle { background:rgba(77,195,255,0.15); color:#4DC3FF; border:1px solid rgba(77,195,255,0.3); }
+    .badge-senior { background:rgba(255,184,77,0.15); color:#FFB84D; border:1px solid rgba(255,184,77,0.3); }
+    .badge-pro { background:linear-gradient(135deg,#FFD700,#FFA500); color:#0A0B14; }
+
+    /* Progress */
+    .progress-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* Voice indicator bars */
+    .voice-bar {
+      width: 4px;
+      background: var(--primary);
+      border-radius: 2px;
+      animation: barAnim 0.8s ease-in-out infinite;
+    }
+
+    /* Code editor */
+    .code-editor {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      background: #0D0E1A;
+      color: #E6E6FF;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      resize: none;
+      outline: none;
+      transition: var(--transition);
+      tab-size: 2;
+    }
+    .code-editor:focus { border-color: var(--primary); box-shadow:0 0 0 3px rgba(108,99,255,0.1); }
+
+    /* Score circle */
+    .score-circle {
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      animation: bounceIn 0.8s cubic-bezier(0.175,0.885,0.32,1.275);
+    }
+
+    /* Nav */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,11,20,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Scrollbar for code editor */
+    .code-editor::-webkit-scrollbar { width:4px; height:4px; }
+    .code-editor::-webkit-scrollbar-track { background:transparent; }
+    .code-editor::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 560px;
+      width: 90%;
+      animation: bounceIn 0.4s ease;
+    }
+
+    /* Shimmer loading */
+    .shimmer {
+      background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card2) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    /* Tooltip */
+    .tooltip { position: relative; }
+    .tooltip::after {
+      content: attr(data-tip);
+      position: absolute; bottom: 110%; left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card2);
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      border: 1px solid var(--border);
+    }
+    .tooltip:hover::after { opacity: 1; }
+
+    /* Tab */
+    .tab-btn {
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--text-secondary);
+      background: transparent;
+    }
+    .tab-btn.active {
+      background: rgba(108,99,255,0.15);
+      color: var(--primary);
+      border: 1px solid rgba(108,99,255,0.3);
+    }
+    .tab-btn:not(.active):hover { color: var(--text-primary); background:rgba(255,255,255,0.05); }
+
+    /* Stars rating */
+    .star { color: #555; font-size: 20px; cursor: pointer; transition: color 0.2s; }
+    .star.active { color: var(--gold); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navbar { padding: 12px 16px; }
+      .modal-box { padding: 24px; }
+    }
+  `}</style>
+);
+
+
+// ============================================================
+// INTERVIEW DATA
+// ============================================================
+const INTERVIEW_DATA = {
+  junior: {
+    html: [
+      { q: "HTML5 da semantic teglari nima? Misollar keltiring.", a: "semantic teglari: header, footer, main, section, article, nav, aside - bular sahifaning strukturasini anglatadi" },
+      { q: "DOCTYPE ning vazifasi nima?", a: "DOCTYPE brauzerga hujjat turini bildiradi va standart rejimda ishlashni ta'minlaydi" },
+      { q: "id va class atributlarining farqi nima?", a: "id noyob identifikator, class esa bir nechta elementda qayta ishlatilishi mumkin" },
+      { q: "inline va block elementlarning farqi nima?", a: "block elementlar yangi qatordan boshlanadi, inline elementlar bir qatorda bo'ladi" },
+      { q: "HTML formalarida required atributi nima qiladi?", a: "required atributi formani yuborishdan oldin maydon to'ldirilishini majburiy qiladi" },
+    ],
+    css: [
+      { q: "CSS Box modelini tushuntiring.", a: "box model: content, padding, border, margin - elementning o'lchamini belgilaydi" },
+      { q: "Flexbox nima va qachon ishlatiladi?", a: "flexbox bir o'lchovli layout uchun - elementlarni qator yoki ustunda tartiblashtiradi" },
+      { q: "CSS Grid va Flexbox farqi nima?", a: "Grid ikki o'lchovli, Flexbox bir o'lchovli layoutlar uchun ishlatiladi" },
+      { q: "position: relative va absolute farqi nima?", a: "relative normal joyidan suriladi, absolute yaqin joylashgan positioned elementga nisbatan joylashadi" },
+      { q: "CSS specificity nima?", a: "specificity - qaysi CSS qoidasi ustuvor bo'lishini belgilaydi: inline > id > class > element" },
+    ],
+    javascript: [
+      { q: "var, let, const farqlari nimada?", a: "var function scope, let va const block scope; const qayta tayinlanmaydi" },
+      { q: "Arrow function va oddiy function farqi nima?", a: "arrow function o'zining this kontekstiga ega emas, qisqaroq sintaksisi bor" },
+      { q: "Promise nima?", a: "Promise asinxron operatsiyaning natijasini ifodalaydi - pending, fulfilled, rejected holatlari bor" },
+      { q: "Event bubbling nima?", a: "event bubbling - hodisa boladan otaga ko'tarilib chiqishi, event.stopPropagation() bilan to'xtatiladi" },
+      { q: "localStorage va sessionStorage farqi nima?", a: "localStorage brauzer yopilganda saqlanadi, sessionStorage faqat shu sessiya uchun" },
+    ],
+    reactjs: [
+      { q: "React hooks nima? useState ni tushuntiring.", a: "hooks function componentlarda state va lifecycle ishlatish imkonini beradi; useState state yaratadi" },
+      { q: "Virtual DOM nima?", a: "Virtual DOM DOM ning yengil nusxasi; React o'zgarishlarni avval shu yerda tekshirib optimizatsiya qiladi" },
+      { q: "Props va State farqi nima?", a: "props tashqaridan keladi va o'zgartirilmaydi; state komponent ichidagi o'zgaruvchan ma'lumot" },
+      { q: "useEffect ni qachon ishlatamiz?", a: "useEffect side effects uchun: API so'rovlar, DOM o'zgartirish, subscriptions" },
+      { q: "key prop nima uchun kerak?", a: "key React ga ro'yxat elementlarini aniqlashga yordam beradi va samarali re-render qiladi" },
+    ],
+    nextjs: [
+      { q: "Next.js nima va React dan nima farqi bor?", a: "Next.js React framework - SSR, SSG, routing va optimizatsiyani o'z ichiga oladi" },
+      { q: "getStaticProps va getServerSideProps farqi nima?", a: "getStaticProps build vaqtida, getServerSideProps har so'rovda server tomonida ishlaydi" },
+      { q: "Next.js routing qanday ishlaydi?", a: "pages papkasidagi fayllar avtomatik route bo'ladi; dynamic routing [id].js bilan" },
+      { q: "Image komponenti nima uchun ishlatiladi?", a: "Next.js Image komponenti rasmlarni optimallashtiradi: lazy loading, WebP format, resizing" },
+      { q: "API routes nima?", a: "pages/api papkasidagi fayllar server-side API endpoint bo'ladi" },
+    ],
+  },
+  middle: {
+    html: [
+      { q: "Web Accessibility (a11y) standartlari haqida gapiring.", a: "WCAG standartlari, ARIA roles, semantic HTML, keyboard navigation, color contrast" },
+      { q: "Shadow DOM nima va Web Components bilan qanday bog'liq?", a: "Shadow DOM - encapsulated DOM tree, Web Components uchun izolatsiya ta'minlaydi" },
+      { q: "HTML5 Canvas va SVG farqlari va qo'llanilishi haqida.", a: "Canvas pixel-based raster grafika, SVG esa vector-based XML - animatsiyalar uchun SVG afzal" },
+    ],
+    css: [
+      { q: "CSS Custom Properties (CSS Variables) ni qanday ishlatiladi?", a: "--variable-name bilan aniqlanadi, var(--variable-name) bilan chaqiriladi; kaskadda meros olinadi" },
+      { q: "CSS animations va transitions farqi nimada?", a: "transitions 2 holat orasida, animations @keyframes bilan murakkab ko'p bosqichli animatsiyalar" },
+      { q: "CSS specificity hisoblash qoidalarini tushuntiring.", a: "Inline:1000, ID:100, class/attr/pseudo-class:10, element/pseudo-element:1" },
+    ],
+    javascript: [
+      { q: "Closure nima? Amaliy misol keltiring.", a: "Closure - inner function outer function scope ga kirishishi; module pattern, private variables uchun" },
+      { q: "Event Loop qanday ishlaydi?", a: "Call stack, Web APIs, Callback queue, Microtask queue - async kodni boshqaradi" },
+      { q: "Prototypal inheritance ni tushuntiring.", a: "JS prototype chain orqali meros oladi; har object __proto__ ga ega, Object.create ishlatiladi" },
+      { q: "async/await va Promise zanjiri farqi nima?", a: "async/await Promise ni sinxron ko'rinishda yozish imkonini beradi, xatolarni try/catch bilan tutadi" },
+    ],
+    reactjs: [
+      { q: "React Context API vs Redux farqi nima?", a: "Context oddiy state sharing uchun, Redux murakkab global state management, time-travel debugging" },
+      { q: "useMemo va useCallback hooks ni tushuntiring.", a: "useMemo qiymatni, useCallback funksiyani memoize qiladi - keraksiz re-render oldini oladi" },
+      { q: "React reconciliation algoritmi qanday ishlaydi?", a: "Fiber algoritm, key prop ishlatish, shallow comparison, batching updates" },
+    ],
+    nextjs: [
+      { q: "Next.js middleware qanday ishlaydi?", a: "middleware.ts edge runtime da ishlaydi, har so'rovdan oldin; auth, redirect, rewrite uchun" },
+      { q: "ISR (Incremental Static Regeneration) nima?", a: "ISR static sahifalarni background da regeneratsiya qiladi, revalidate interval bilan" },
+      { q: "Next.js 13+ App Router va Pages Router farqi.", a: "App Router server components default, parallel routes, intercepting routes, layouts nested" },
+    ],
+  },
+  senior: {
+    html: [
+      { q: "Critical Rendering Path ni optimizatsiya qilish usullari.", a: "render-blocking resource kamaytirish, preload, prefetch, inline critical CSS, defer scripts" },
+      { q: "Core Web Vitals ni qanday yaxshilash mumkin?", a: "LCP: server response, lazy load; FID: long tasks split; CLS: layout shift oldini olish" },
+    ],
+    css: [
+      { q: "CSS Architecture metodologiyalari: BEM, SMACSS, OOCSS.", a: "BEM block__element--modifier; SMACSS kategoriyalash; OOCSS qayta ishlatiluvchi komponentlar" },
+      { q: "CSS Houdini nima?", a: "CSS Houdini - low-level CSS engine API, custom properties, paint worklet, layout worklet" },
+    ],
+    javascript: [
+      { q: "JavaScript engine qanday kodni optimizatsiya qiladi? V8 internals.", a: "JIT compilation, hidden classes, inline caching, garbage collection - monomorphic code tez" },
+      { q: "Web Workers va Service Workers farqi va qo'llanilishi.", a: "Web Workers heavy computation uchun, Service Workers offline caching, push notifications" },
+      { q: "Memory management va memory leak larning oldini olish.", a: "circular references, detached DOM nodes, event listener cleanup, WeakMap/WeakRef ishlatish" },
+    ],
+    reactjs: [
+      { q: "React 18 Concurrent Mode va Suspense ni tushuntiring.", a: "concurrent rendering interruptible, useTransition, useDeferredValue, Suspense fallback streaming" },
+      { q: "Micro-frontend architecture ni React da qanday implement qilasiz?", a: "Module Federation, single-spa, iframe, web components - shared state va routing strategiyalari" },
+      { q: "React performance bottleneck larni qanday diagnose qilasiz?", a: "React DevTools Profiler, memo, virtualization, code splitting, bundle analysis, lighthouse" },
+    ],
+    nextjs: [
+      { q: "Next.js Edge Runtime vs Node.js Runtime farqi.", a: "Edge: V8 isolates, hamma joyda qisqa latency, limited APIs; Node.js: to'liq Node API, serverda" },
+      { q: "Next.js bilan microservices arxitekturasini qanday qurgan bo'lardingiz?", a: "API gateway pattern, BFF (Backend for Frontend), service discovery, circuit breaker, caching layers" },
+    ],
+  }
+};
+
+// Coding challenges by level
+const CODING_CHALLENGES = {
+  junior: [
+    {
+      id: 1, title: "Palindrome Tekshiruvi", difficulty: "Oson",
+      description: "Berilgan string palindrome ekanligini tekshiradigan funksiya yozing.\nPalindrome - chapdan va o'ngdan o'qilganda bir xil bo'lgan so'z.",
+      template: `function isPalindrome(str) {
+  // Bu yerga kod yozing
+  
+}
+
+// Testlar
+console.log(isPalindrome("racecar")); // true
+console.log(isPalindrome("hello"));   // false
+console.log(isPalindrome("madam"));   // true`,
+      expected: "true\nfalse\ntrue",
+      hint: "str.split('').reverse().join('') bilan teskari string hosil qiling"
+    },
+    {
+      id: 2, title: "Array Yig'indisi", difficulty: "Oson",
+      description: "Massiv elementlarining yig'indisini hisoblovchi funksiya yozing.",
+      template: `function arraySum(arr) {
+  // Bu yerga kod yozing
+  
+}
+
+console.log(arraySum([1, 2, 3, 4, 5])); // 15
+console.log(arraySum([10, -5, 3]));      // 8`,
+      expected: "15\n8",
+      hint: "reduce() yoki for loop ishlatish mumkin"
+    },
+    {
+      id: 3, title: "FizzBuzz", difficulty: "Oson",
+      description: "1 dan 20 gacha sonlarni chiqaring.\n3 ga bo'linadigan son uchun 'Fizz', 5 ga bo'linsa 'Buzz', ikkalasiga bo'linsa 'FizzBuzz' chiqaring.",
+      template: `function fizzBuzz(n) {
+  // Bu yerga kod yozing
+  
+}
+
+fizzBuzz(20);`,
+      expected: "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz\n16\n17\nFizz\n19\nBuzz",
+      hint: "% (modulo) operatori va if/else ishlatling"
+    },
+  ],
+  middle: [
+    {
+      id: 1, title: "Deep Clone", difficulty: "O'rta",
+      description: "Ob'ektni chuqur nusxalovchi (deep clone) funksiya yozing. JSON.parse/stringify ishlatmang.",
+      template: `function deepClone(obj) {
+  // Bu yerga kod yozing
+  
+}
+
+const obj1 = { a: 1, b: { c: 2, d: [1, 2, 3] } };
+const obj2 = deepClone(obj1);
+obj2.b.c = 99;
+console.log(obj1.b.c); // 2 (o'zgarmagan bo'lishi kerak)
+console.log(obj2.b.c); // 99`,
+      expected: "2\n99",
+      hint: "Rekursiya ishlatib, array va object uchun alohida logic yozing"
+    },
+    {
+      id: 2, title: "Debounce Funksiya", difficulty: "O'rta",
+      description: "debounce funksiyasini implement qiling.",
+      template: `function debounce(fn, delay) {
+  // Bu yerga kod yozing
+  
+}
+
+let count = 0;
+const increment = debounce(() => { count++; console.log('called', count); }, 100);
+increment();
+increment();
+increment();
+setTimeout(() => console.log('final:', count), 200);`,
+      expected: "called 1\nfinal: 1",
+      hint: "clearTimeout va setTimeout ishlatib, so'nggi chaqiruvni saqlang"
+    },
+    {
+      id: 3, title: "Promise.all Implementatsiyasi", difficulty: "O'rta",
+      description: "Promise.all ni qayta implement qiling.",
+      template: `function myPromiseAll(promises) {
+  // Bu yerga kod yozing
+  
+}
+
+const p1 = Promise.resolve(1);
+const p2 = Promise.resolve(2);
+const p3 = Promise.resolve(3);
+
+myPromiseAll([p1, p2, p3]).then(values => console.log(values));`,
+      expected: "[1, 2, 3]",
+      hint: "results massivi va counter bilan barcha promise larni kuting"
+    },
+  ],
+  senior: [
+    {
+      id: 1, title: "Event Emitter", difficulty: "Qiyin",
+      description: "To'liq EventEmitter klassini implement qiling: on, off, once, emit metodlari.",
+      template: `class EventEmitter {
+  // Bu yerga kod yozing
+  
+}
+
+const emitter = new EventEmitter();
+emitter.on('data', (x) => console.log('listener1:', x));
+const fn = (x) => console.log('listener2:', x);
+emitter.on('data', fn);
+emitter.once('done', () => console.log('done!'));
+
+emitter.emit('data', 42);
+emitter.off('data', fn);
+emitter.emit('data', 100);
+emitter.emit('done');
+emitter.emit('done'); // should not trigger`,
+      expected: "listener1: 42\nlistener2: 42\nlistener1: 100\ndone!",
+      hint: "Map da event -> listeners array saqlang, once uchun wrapper funksiya ishlating"
+    },
+    {
+      id: 2, title: "Virtual DOM Diff", difficulty: "Qiyin",
+      description: "Oddiy virtual DOM diff algoritmi yozing. Ikkita vNode strukturasini solishtiring va farqlarni toping.",
+      template: `function diff(oldNode, newNode) {
+  const patches = [];
+  
+  function walk(old, next, path = '') {
+    // Bu yerga kod yozing
+  }
+  
+  walk(oldNode, newNode);
+  return patches;
+}
+
+const old = { tag: 'div', props: { id: 'app' }, children: ['Hello'] };
+const next = { tag: 'div', props: { id: 'app', class: 'new' }, children: ['World'] };
+
+console.log(JSON.stringify(diff(old, next)));`,
+      expected: '[{"type":"PROP","key":"class","value":"new"},{"type":"TEXT","value":"World"}]',
+      hint: "props larni, children larni alohida solishtiring, patch array qaytaring"
+    },
+  ]
+};
+
+
+// ============================================================
+// APP CONTEXT
+// ============================================================
+const AppContext = createContext(null);
+const useApp = () => useContext(AppContext);
+
+const AppProvider = ({ children }) => {
+  const [page, setPage] = useState('landing');
+  const [interviewConfig, setInterviewConfig] = useState({
+    level: null, direction: null
+  });
+  const [interviewState, setInterviewState] = useState({
+    stage: 1,
+    currentQ: 0,
+    answers: [],
+    scores: { voice: 0, coding: 0, total: 0 },
+    timeSpent: 0,
+  });
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('mip_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [authModal, setAuthModal] = useState(null); // 'login' | 'register'
+  const [isPro, setIsPro] = useState(false);
+
+  const navigate = useCallback((p) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem('mip_user');
+    setUser(null);
+    navigate('landing');
+  };
+
+  return (
+    <AppContext.Provider value={{
+      page, navigate,
+      interviewConfig, setInterviewConfig,
+      interviewState, setInterviewState,
+      user, setUser,
+      authModal, setAuthModal,
+      isPro, setIsPro,
+      logout
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
+};
+
+// ============================================================
+// SHARED COMPONENTS
+// ============================================================
+
+// Navbar
+const Navbar = () => {
+  const { navigate, page, user, setAuthModal, isPro, logout } = useApp();
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const isInterview = ['voice-interview', 'coding-interview'].includes(page);
+  if (isInterview) return null;
+
+  return (
+    <nav className="navbar" style={{ background: scrolled ? 'rgba(10,11,20,0.95)' : 'rgba(10,11,20,0.7)' }}>
+      {/* Logo */}
+      <div onClick={() => navigate('landing')} style={{ cursor:'pointer', display:'flex', alignItems:'center', gap:'10px' }}>
+        <div style={{
+          width:36, height:36, borderRadius:10,
+          background:'linear-gradient(135deg, #6C63FF, #FF6584)',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontSize:18
+        }}>🎯</div>
+        <span style={{ fontWeight:800, fontSize:18 }}>
+          Mock<span className="gradient-text">Interview</span>
+          {isPro && <span className="badge badge-pro" style={{marginLeft:6, fontSize:10}}>PRO</span>}
+        </span>
+      </div>
+
+      {/* Desktop Nav */}
+      <div style={{ display:'flex', alignItems:'center', gap:8 }} className="desktop-nav">
+        {['landing','pricing','leaderboard'].map(p => (
+          <button key={p} onClick={() => navigate(p)}
+            style={{
+              background: page===p ? 'rgba(108,99,255,0.15)' : 'transparent',
+              color: page===p ? 'var(--primary)' : 'var(--text-secondary)',
+              border: 'none', padding:'8px 16px', borderRadius:8,
+              fontSize:14, fontWeight:500, cursor:'pointer', transition:'var(--transition)'
+            }}>
+            { p==='landing' ? '🏠 Bosh sahifa' : p==='pricing' ? '💎 Narxlar' : '🏆 Reyting' }
+          </button>
+        ))}
+        {user && (
+          <button onClick={() => navigate('dashboard')}
+            style={{
+              background: page==='dashboard' ? 'rgba(108,99,255,0.15)' : 'transparent',
+              color: page==='dashboard' ? 'var(--primary)' : 'var(--text-secondary)',
+              border: 'none', padding:'8px 16px', borderRadius:8,
+              fontSize:14, fontWeight:500, cursor:'pointer'
+            }}>
+            📊 Dashboard
+          </button>
+        )}
+      </div>
+
+      {/* Auth */}
+      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+        {user ? (
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <div onClick={() => navigate('dashboard')} style={{
+              display:'flex', alignItems:'center', gap:8,
+              background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)',
+              borderRadius:10, padding:'6px 14px', cursor:'pointer'
+            }}>
+              <div style={{
+                width:28, height:28, borderRadius:'50%',
+                background:'linear-gradient(135deg,#6C63FF,#FF6584)',
+                display:'flex', alignItems:'center', justifyContent:'center', fontSize:13
+              }}>
+                {user.name?.[0]?.toUpperCase() || '👤'}
+              </div>
+              <span style={{ fontSize:14, fontWeight:500 }}>{user.name}</span>
+            </div>
+            <button onClick={logout} className="btn-icon" title="Chiqish">🚪</button>
+          </div>
+        ) : (
+          <>
+            <button onClick={() => setAuthModal('login')} className="btn-secondary" style={{ padding:'8px 20px', fontSize:14 }}>
+              Kirish
+            </button>
+            <button onClick={() => setAuthModal('register')} className="btn-primary" style={{ padding:'8px 20px', fontSize:14 }}>
+              Ro'yxatdan o'tish
+            </button>
+          </>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+// Voice Waveform
+const VoiceWaveform = ({ isActive, color = '#6C63FF', size = 'md' }) => {
+  const heights = [8,14,20,28,20,14,8,14,20,14,8];
+  const s = size === 'sm' ? 0.6 : size === 'lg' ? 1.5 : 1;
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap: 3*s, height: 40*s }}>
+      {heights.map((h, i) => (
+        <div key={i} className="voice-bar" style={{
+          width: 4*s,
+          height: isActive ? h*s : 4*s,
+          background: color,
+          animationDelay: `${i * 0.08}s`,
+          transition: 'height 0.3s ease',
+          animation: isActive ? `barAnim ${0.6 + i*0.05}s ease-in-out infinite alternate` : 'none'
+        }} />
+      ))}
+    </div>
+  );
+};
+
+// Circular Progress
+const CircularProgress = ({ value, size=120, stroke=10, color='#6C63FF', label='' }) => {
+  const r = (size - stroke) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (value / 100) * circ;
+  return (
+    <div style={{ position:'relative', width:size, height:size, display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <svg width={size} height={size} style={{ position:'absolute', transform:'rotate(-90deg)' }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color}
+          strokeWidth={stroke} strokeDasharray={circ} strokeDashoffset={offset}
+          strokeLinecap="round" style={{ transition:'stroke-dashoffset 1s ease' }} />
+      </svg>
+      <div style={{ textAlign:'center' }}>
+        <div style={{ fontSize: size/5, fontWeight:800, color }}>{value}</div>
+        {label && <div style={{ fontSize:10, color:'var(--text-muted)' }}>{label}</div>}
+      </div>
+    </div>
+  );
+};
+
+// Auth Modal
+const AuthModal = () => {
+  const { authModal, setAuthModal, setUser, navigate } = useApp();
+  const [form, setForm] = useState({ name:'', email:'', password:'' });
+  const [error, setError] = useState('');
+
+  if (!authModal) return null;
+
+  const isLogin = authModal === 'login';
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!form.email || !form.password) { setError('Barcha maydonlarni to\'ldiring'); return; }
+    if (!isLogin && !form.name) { setError('Ismingizni kiriting'); return; }
+
+    const userData = {
+      id: Date.now(),
+      name: isLogin ? (form.email.split('@')[0]) : form.name,
+      email: form.email,
+      joinDate: new Date().toLocaleDateString('uz-UZ'),
+      interviewCount: 0, bestScore: 0, level: 'Junior'
+    };
+    localStorage.setItem('mip_user', JSON.stringify(userData));
+    setUser(userData);
+    setAuthModal(null);
+    setError('');
+  };
+
+  return (
+    <div className="modal-overlay" onClick={() => setAuthModal(null)}>
+      <div className="modal-box" onClick={e => e.stopPropagation()}>
+        <div style={{ textAlign:'center', marginBottom:32 }}>
+          <div style={{ fontSize:40, marginBottom:12 }}>🎯</div>
+          <h2 style={{ fontSize:24, fontWeight:700, marginBottom:8 }}>
+            {isLogin ? 'Xush kelibsiz!' : 'Hisob yaratish'}
+          </h2>
+          <p style={{ color:'var(--text-secondary)', fontSize:14 }}>
+            {isLogin ? 'Davom etish uchun kiring' : 'Bepul boshlang, har doim'}
+          </p>
+        </div>
+
+        {error && (
+          <div style={{ background:'rgba(255,77,106,0.1)', border:'1px solid rgba(255,77,106,0.3)',
+            borderRadius:8, padding:'10px 14px', color:'#FF4D6A', fontSize:13, marginBottom:16 }}>
+            ⚠️ {error}
+          </div>
+        )}
+
+        <form onSubmit={submit} style={{ display:'flex', flexDirection:'column', gap:14 }}>
+          {!isLogin && (
+            <input className="input-field" placeholder="Ismingiz" value={form.name}
+              onChange={e => setForm({...form, name:e.target.value})} />
+          )}
+          <input className="input-field" type="email" placeholder="Email" value={form.email}
+            onChange={e => setForm({...form, email:e.target.value})} />
+          <input className="input-field" type="password" placeholder="Parol" value={form.password}
+            onChange={e => setForm({...form, password:e.target.value})} />
+          <button type="submit" className="btn-primary" style={{ width:'100%', justifyContent:'center', marginTop:4 }}>
+            {isLogin ? '🚀 Kirish' : '✨ Ro\'yxatdan o\'tish'}
+          </button>
+        </form>
+
+        <div style={{ textAlign:'center', marginTop:20, color:'var(--text-secondary)', fontSize:14 }}>
+          {isLogin ? "Hisobingiz yo'qmi? " : "Hisobingiz bormi? "}
+          <span onClick={() => setAuthModal(isLogin ? 'register' : 'login')}
+            style={{ color:'var(--primary)', cursor:'pointer', fontWeight:600 }}>
+            {isLogin ? "Ro'yxatdan o'ting" : "Kiring"}
+          </span>
+        </div>
+
+        <button onClick={() => setAuthModal(null)} style={{
+          position:'absolute', top:16, right:16,
+          background:'transparent', border:'none', color:'var(--text-muted)',
+          fontSize:20, cursor:'pointer'
+        }}>✕</button>
+      </div>
+    </div>
+  );
+};
+
+
+// ============================================================
+// LANDING PAGE
+// ============================================================
+const LandingPage = () => {
+  const { navigate, setAuthModal, user } = useApp();
+  const [stats] = useState({ users: 12847, interviews: 89234, avgScore: 78 });
+
+  const features = [
+    { icon:'🎤', title:'AI Voice Intervyu', desc:'Sun\'iy intellekt bilan real vaqtda ovozli suhbat. Savollar va javoblar voice recognition orqali.' },
+    { icon:'💻', title:'Live Kod Musobaqa', desc:'Brauzerda to\'g\'ridan-to\'g\'ri kod yozib, natijani ko\'ring. Real intervyu muhiti.' },
+    { icon:'🏆', title:'Batafsil Baho', desc:'100 ballik tizimda AI tahlili. Kuchli va zaif tomonlaringizni aniq ko\'ring.' },
+    { icon:'📈', title:'Progress Kuzatish', desc:'Har bir intervyudan so\'ng o\'sishingizni kuzating. Statistika va tahlil.' },
+    { icon:'🌟', title:'Darajali Savollar', desc:'Junior, Middle, Senior — har darajaga mos savollar bazasi 500+ savol.' },
+    { icon:'🔒', title:'Xavfsiz & Shaxsiy', desc:'Sizning javoblaringiz va natijalaringiz maxfiy. GDPR muvofiq.' },
+  ];
+
+  const techStack = ['HTML5', 'CSS3', 'Bootstrap', 'JavaScript', 'React.js', 'Next.js'];
+  const levels = [
+    { level:'Junior', color:'#43E97B', desc:'0-1 yil tajriba', count:'180+ savol' },
+    { level:'Middle', color:'#4DC3FF', desc:'1-3 yil tajriba', count:'120+ savol' },
+    { level:'Senior', color:'#FFB84D', desc:'3+ yil tajriba', count:'80+ savol' },
+  ];
+
+  const testimonials = [
+    { name:'Sardor T.', role:'React Developer @ Uzum', score:92, text:'MockInterview Pro orqali 3 hafta mashq qilib, Google Uzbekistan ga kirdim!', avatar:'S' },
+    { name:'Malika K.', role:'Frontend Dev @ EPAM', score:88, text:'Voice intervyu funksiyasi juda real. Real intervyuga tayyor bo\'ldim.', avatar:'M' },
+    { name:'Jasur R.', role:'Next.js Dev @ Freelance', score:95, text:'Senior darajasiga o\'tishga yordam berdi. Kodni yozish qismi ayniqsa zo\'r!', avatar:'J' },
+  ];
+
+  return (
+    <div style={{ paddingTop:80 }}>
+      {/* Hero Section */}
+      <section style={{
+        minHeight:'100vh', display:'flex', flexDirection:'column',
+        alignItems:'center', justifyContent:'center',
+        padding:'60px 20px', textAlign:'center', position:'relative', overflow:'hidden'
+      }}>
+        {/* BG Blobs */}
+        <div style={{
+          position:'absolute', top:'10%', left:'10%',
+          width:400, height:400, borderRadius:'50%',
+          background:'radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%)',
+          filter:'blur(40px)', animation:'float 6s ease-in-out infinite'
+        }}/>
+        <div style={{
+          position:'absolute', bottom:'10%', right:'10%',
+          width:300, height:300, borderRadius:'50%',
+          background:'radial-gradient(circle, rgba(255,101,132,0.12) 0%, transparent 70%)',
+          filter:'blur(40px)', animation:'float 8s ease-in-out infinite reverse'
+        }}/>
+
+        <div className="badge badge-junior" style={{ marginBottom:24, fontSize:13 }}>
+          🚀 AI bilan kuchaytirilgan platform
+        </div>
+
+        <h1 style={{
+          fontSize:'clamp(36px, 7vw, 80px)', fontWeight:900,
+          lineHeight:1.1, marginBottom:24, maxWidth:900
+        }}>
+          Frontend Intervyuga<br/>
+          <span className="gradient-text">100% Tayyor Bo'ling</span>
+        </h1>
+
+        <p style={{
+          fontSize:'clamp(16px, 2.5vw, 22px)', color:'var(--text-secondary)',
+          maxWidth:660, lineHeight:1.7, marginBottom:48
+        }}>
+          AI assistant bilan <strong style={{color:'white'}}>ovozli intervyu</strong> mashqi qiling.
+          Real kod musobaqalari yozing. <strong style={{color:'white'}}>100 ballik</strong> batafsil tahlil oling.
+        </p>
+
+        <div style={{ display:'flex', gap:16, flexWrap:'wrap', justifyContent:'center', marginBottom:64 }}>
+          <button onClick={() => navigate('setup')} className="btn-primary animate-pulse-btn"
+            style={{ fontSize:18, padding:'18px 48px', borderRadius:16 }}>
+            🎯 Bepul Boshlash
+          </button>
+          <button onClick={() => navigate('pricing')} className="btn-secondary"
+            style={{ fontSize:18, padding:'18px 48px', borderRadius:16 }}>
+            💎 PRO Versiya
+          </button>
+        </div>
+
+        {/* Stats */}
+        <div style={{ display:'flex', gap:48, flexWrap:'wrap', justifyContent:'center' }}>
+          {[
+            { v:`${(stats.users/1000).toFixed(1)}K+`, l:'Foydalanuvchilar' },
+            { v:`${(stats.interviews/1000).toFixed(0)}K+`, l:'Intervyular' },
+            { v:`${stats.avgScore}%`, l:"O'rtacha muvaffaqiyat" },
+            { v:'500+', l:"Savollar bazasi" },
+          ].map((s,i) => (
+            <div key={i} style={{ textAlign:'center' }}>
+              <div style={{ fontSize:32, fontWeight:800, color:'var(--primary)' }}>{s.v}</div>
+              <div style={{ fontSize:13, color:'var(--text-muted)' }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Tech Stack Section */}
+      <section style={{ padding:'80px 20px', textAlign:'center' }}>
+        <p style={{ color:'var(--text-muted)', fontSize:13, letterSpacing:2, textTransform:'uppercase', marginBottom:24 }}>
+          Qamrab olingan texnologiyalar
+        </p>
+        <div style={{ display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center' }}>
+          {techStack.map((tech,i) => (
+            <div key={i} className="glass-card" style={{
+              padding:'12px 24px', fontSize:15, fontWeight:600,
+              borderColor:`rgba(108,99,255,${0.1+i*0.05})`,
+              cursor:'pointer', transition:'var(--transition)',
+              display:'flex', alignItems:'center', gap:8
+            }}>
+              {['🌐','🎨','🅱️','⚡','⚛️','▲'][i]} {tech}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Levels */}
+      <section style={{ padding:'40px 20px 80px', maxWidth:1200, margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:48 }}>
+          <h2 style={{ fontSize:'clamp(28px,5vw,48px)', fontWeight:800, marginBottom:12 }}>
+            Darajangizni <span className="gradient-text">Tanlang</span>
+          </h2>
+          <p style={{ color:'var(--text-secondary)', fontSize:16 }}>Har bir daraja uchun maxsus savollar va vazifalar</p>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))', gap:24 }}>
+          {levels.map((lv,i) => (
+            <div key={i} className="glass-card animate-fadeIn" onClick={() => {navigate('setup')}}
+              style={{
+                padding:32, cursor:'pointer',
+                borderColor:`rgba(${lv.color === '#43E97B' ? '67,233,123' : lv.color === '#4DC3FF' ? '77,195,255' : '255,184,77'},0.2)`,
+                transition:'var(--transition)',
+                animationDelay: `${i*0.1}s`
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow=`0 20px 60px rgba(0,0,0,0.4)`; }}
+              onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow=''; }}>
+              <div style={{
+                width:60, height:60, borderRadius:16,
+                background:`linear-gradient(135deg, ${lv.color}22, ${lv.color}44)`,
+                border:`1px solid ${lv.color}44`, display:'flex', alignItems:'center',
+                justifyContent:'center', fontSize:28, marginBottom:20
+              }}>
+                {['🌱','🔥','⚡'][i]}
+              </div>
+              <div className="badge" style={{
+                marginBottom:12,
+                background:`${lv.color}22`, color:lv.color, border:`1px solid ${lv.color}44`
+              }}>{lv.level}</div>
+              <h3 style={{ fontSize:20, fontWeight:700, marginBottom:8 }}>{lv.desc}</h3>
+              <p style={{ color:'var(--text-secondary)', fontSize:14, marginBottom:16 }}>{lv.count}</p>
+              <div style={{ color:lv.color, fontSize:13, fontWeight:600 }}>Boshlash →</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section style={{ padding:'40px 20px 80px', maxWidth:1200, margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:48 }}>
+          <h2 style={{ fontSize:'clamp(28px,5vw,48px)', fontWeight:800, marginBottom:12 }}>
+            Nima uchun <span className="gradient-text">MockInterview Pro?</span>
+          </h2>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))', gap:20 }}>
+          {features.map((f,i) => (
+            <div key={i} className="glass-card" style={{ padding:28, transition:'var(--transition)' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor='rgba(108,99,255,0.3)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor=''}>
+              <div style={{ fontSize:36, marginBottom:16 }}>{f.icon}</div>
+              <h3 style={{ fontSize:18, fontWeight:700, marginBottom:8 }}>{f.title}</h3>
+              <p style={{ color:'var(--text-secondary)', fontSize:14, lineHeight:1.6 }}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section style={{ padding:'40px 20px 80px', maxWidth:1200, margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:48 }}>
+          <h2 style={{ fontSize:'clamp(24px,4vw,40px)', fontWeight:800, marginBottom:12 }}>
+            Muvaffaqiyat <span className="gradient-text">Hikoyalari</span>
+          </h2>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))', gap:20 }}>
+          {testimonials.map((t,i) => (
+            <div key={i} className="glass-card" style={{ padding:28 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
+                <div style={{
+                  width:48, height:48, borderRadius:'50%',
+                  background:'linear-gradient(135deg,#6C63FF,#FF6584)',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize:18, fontWeight:700
+                }}>{t.avatar}</div>
+                <div>
+                  <div style={{ fontWeight:700 }}>{t.name}</div>
+                  <div style={{ fontSize:12, color:'var(--text-muted)' }}>{t.role}</div>
+                </div>
+                <div style={{ marginLeft:'auto', background:'rgba(67,233,123,0.1)', color:'#43E97B',
+                  borderRadius:8, padding:'4px 10px', fontSize:13, fontWeight:700 }}>
+                  {t.score}/100
+                </div>
+              </div>
+              <p style={{ color:'var(--text-secondary)', fontSize:14, lineHeight:1.7, fontStyle:'italic' }}>
+                "{t.text}"
+              </p>
+              <div style={{ marginTop:12 }}>
+                {'⭐'.repeat(5)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section style={{
+        padding:'80px 20px', textAlign:'center',
+        background:'linear-gradient(135deg, rgba(108,99,255,0.1) 0%, rgba(255,101,132,0.05) 100%)',
+        borderTop:'1px solid var(--border)', borderBottom:'1px solid var(--border)'
+      }}>
+        <h2 style={{ fontSize:'clamp(28px,5vw,52px)', fontWeight:900, marginBottom:16 }}>
+          Bugundan Boshlang!
+        </h2>
+        <p style={{ color:'var(--text-secondary)', fontSize:18, marginBottom:40 }}>
+          Birinchi intervyungiz bepul. Hech qanday kredit karta talab etilmaydi.
+        </p>
+        <button onClick={() => navigate('setup')} className="btn-primary animate-glow"
+          style={{ fontSize:20, padding:'20px 60px', borderRadius:20 }}>
+          🚀 Hozir Boshlash — Bepul!
+        </button>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ padding:'48px 40px', borderTop:'1px solid var(--border)' }}>
+        <div style={{ maxWidth:1200, margin:'0 auto', display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:24 }}>
+          <div>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+              <span style={{ fontSize:24 }}>🎯</span>
+              <span style={{ fontWeight:800, fontSize:18 }}>MockInterview Pro</span>
+            </div>
+            <p style={{ color:'var(--text-muted)', fontSize:13, maxWidth:280, lineHeight:1.6 }}>
+              Frontend dasturchilarga mo'ljallangan AI-powered intervyu mashq platformasi.
+            </p>
+          </div>
+          <div style={{ display:'flex', gap:48, flexWrap:'wrap' }}>
+            {[
+              { title:'Platforma', items:['Boshlash','Narxlar','Reyting'] },
+              { title:'Qo\'llab-quvvatlash', items:['FAQ', 'Bog\'lanish', 'Blog'] },
+            ].map((col,i) => (
+              <div key={i}>
+                <div style={{ fontWeight:700, marginBottom:12 }}>{col.title}</div>
+                {col.items.map((item,j) => (
+                  <div key={j} style={{ color:'var(--text-muted)', fontSize:13, marginBottom:8, cursor:'pointer' }}
+                    onMouseEnter={e=>e.target.style.color='var(--primary)'}
+                    onMouseLeave={e=>e.target.style.color=''}>{item}</div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ textAlign:'center', marginTop:40, color:'var(--text-muted)', fontSize:12, borderTop:'1px solid var(--border)', paddingTop:24 }}>
+          © 2024 MockInterview Pro. Barcha huquqlar himoyalangan. 🇺🇿 O'zbekiston
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+
+// ============================================================
+// SETUP PAGE
+// ============================================================
+const SetupPage = () => {
+  const { navigate, setInterviewConfig, interviewConfig, user, setAuthModal } = useApp();
+  const [step, setStep] = useState(1);
+  const [selected, setSelected] = useState({ level: null, direction: null, focus: [] });
+
+  const levels = [
+    { id:'junior', label:'Junior', icon:'🌱', color:'#43E97B', desc:'0–1 yil tajriba', topics:['HTML teglari','CSS asoslari','JS asoslari','React hooks'] },
+    { id:'middle', label:'Middle', icon:'🔥', color:'#4DC3FF', desc:'1–3 yil tajriba', topics:['Async/Await','Redux','Performance','Testing'] },
+    { id:'senior', label:'Senior', icon:'⚡', color:'#FFB84D', desc:'3+ yil tajriba', topics:['Architecture','Micro-frontend','V8 internals','System design'] },
+  ];
+
+  const directions = [
+    { id:'fullstack', label:'Full-stack Frontend', icon:'🌐', desc:'Hamma texnologiyalar bo\'yicha' },
+    { id:'react', label:'React Specialist', icon:'⚛️', desc:'React va ekotizim' },
+    { id:'next', label:'Next.js Developer', icon:'▲', desc:'Next.js va server components' },
+    { id:'vanilla', label:'Vanilla JS', icon:'⚡', desc:'HTML, CSS, JavaScript' },
+  ];
+
+  const start = () => {
+    if (!selected.level || !selected.direction) return;
+    setInterviewConfig({ level: selected.level, direction: selected.direction });
+    navigate('voice-interview');
+  };
+
+  return (
+    <div style={{ minHeight:'100vh', paddingTop:100, padding:'100px 20px 60px', maxWidth:800, margin:'0 auto' }}>
+      {/* Progress Steps */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:0, marginBottom:48 }}>
+        {['Daraja', "Yo'nalish", 'Boshlash'].map((s,i) => (
+          <React.Fragment key={i}>
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+              <div style={{
+                width:40, height:40, borderRadius:'50%',
+                background: step > i ? 'var(--primary)' : step === i+1 ? 'var(--primary)' : 'var(--border)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontWeight:700, fontSize:14, transition:'var(--transition)'
+              }}>{step > i+1 ? '✓' : i+1}</div>
+              <span style={{ fontSize:12, color: step >= i+1 ? 'var(--primary)' : 'var(--text-muted)' }}>{s}</span>
+            </div>
+            {i < 2 && <div style={{ width:80, height:2, background: step > i+1 ? 'var(--primary)' : 'var(--border)', margin:'0 4px', marginBottom:20, transition:'var(--transition)' }}/>}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* Step 1: Level */}
+      {step === 1 && (
+        <div className="animate-fadeIn">
+          <h2 style={{ fontSize:28, fontWeight:800, textAlign:'center', marginBottom:8 }}>Darajangizni tanlang</h2>
+          <p style={{ color:'var(--text-secondary)', textAlign:'center', marginBottom:32 }}>Sizning tajribangizga mos darajani belgilang</p>
+          <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+            {levels.map(lv => (
+              <div key={lv.id} className="glass-card" onClick={() => setSelected({...selected, level:lv.id})}
+                style={{
+                  padding:24, cursor:'pointer', transition:'var(--transition)',
+                  border: selected.level === lv.id ? `1px solid ${lv.color}` : '1px solid rgba(255,255,255,0.08)',
+                  background: selected.level === lv.id ? `${lv.color}11` : ''
+                }}>
+                <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+                  <div style={{
+                    width:56, height:56, borderRadius:16,
+                    background:`${lv.color}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:26
+                  }}>{lv.icon}</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
+                      <span style={{ fontWeight:700, fontSize:18 }}>{lv.label}</span>
+                      <span style={{ fontSize:13, color:'var(--text-muted)' }}>{lv.desc}</span>
+                    </div>
+                    <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+                      {lv.topics.map((t,i) => (
+                        <span key={i} style={{ fontSize:11, background:'rgba(255,255,255,0.05)', padding:'3px 8px', borderRadius:4, color:'var(--text-muted)' }}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{
+                    width:24, height:24, borderRadius:'50%',
+                    border:`2px solid ${selected.level===lv.id ? lv.color : 'var(--border)'}`,
+                    background: selected.level===lv.id ? lv.color : 'transparent',
+                    display:'flex', alignItems:'center', justifyContent:'center', fontSize:12
+                  }}>{selected.level===lv.id && '✓'}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop:32, display:'flex', justifyContent:'flex-end' }}>
+            <button className="btn-primary" disabled={!selected.level}
+              onClick={() => setStep(2)} style={{ padding:'14px 40px' }}>
+              Keyingisi →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Direction */}
+      {step === 2 && (
+        <div className="animate-fadeIn">
+          <h2 style={{ fontSize:28, fontWeight:800, textAlign:'center', marginBottom:8 }}>Yo'nalishni tanlang</h2>
+          <p style={{ color:'var(--text-secondary)', textAlign:'center', marginBottom:32 }}>Qaysi soha bo'yicha intervyu topshirasiz?</p>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:16 }}>
+            {directions.map(d => (
+              <div key={d.id} className="glass-card" onClick={() => setSelected({...selected, direction:d.id})}
+                style={{
+                  padding:24, cursor:'pointer', transition:'var(--transition)',
+                  border: selected.direction === d.id ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.08)',
+                  background: selected.direction === d.id ? 'rgba(108,99,255,0.1)' : ''
+                }}>
+                <div style={{ fontSize:32, marginBottom:10 }}>{d.icon}</div>
+                <div style={{ fontWeight:700, fontSize:16, marginBottom:4 }}>{d.label}</div>
+                <div style={{ fontSize:13, color:'var(--text-muted)' }}>{d.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop:32, display:'flex', justifyContent:'space-between' }}>
+            <button className="btn-secondary" onClick={() => setStep(1)}>← Orqaga</button>
+            <button className="btn-primary" disabled={!selected.direction}
+              onClick={() => setStep(3)} style={{ padding:'14px 40px' }}>
+              Keyingisi →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Confirm */}
+      {step === 3 && (
+        <div className="animate-fadeIn" style={{ textAlign:'center' }}>
+          <div style={{ fontSize:64, marginBottom:16 }}>🎯</div>
+          <h2 style={{ fontSize:32, fontWeight:800, marginBottom:8 }}>Tayyor!</h2>
+          <p style={{ color:'var(--text-secondary)', fontSize:16, marginBottom:32 }}>Intervyu boshlanishga tayyor. Boshlashdan oldin tekshiring.</p>
+
+          <div className="glass-card" style={{ padding:28, marginBottom:32, textAlign:'left', display:'inline-block', minWidth:300 }}>
+            <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+              {[
+                { l:'Daraja', v: selected.level?.charAt(0).toUpperCase()+selected.level?.slice(1), icon:'🎓' },
+                { l:"Yo'nalish", v: directions.find(d=>d.id===selected.direction)?.label, icon:'🚀' },
+                { l:'1-bosqich', v:'Ovozli savollar (5 savol)', icon:'🎤' },
+                { l:'2-bosqich', v:'Texnik vazifalar (3 vazifa)', icon:'💻' },
+                { l:'Natija', v:'AI tahlil + 100 ball', icon:'🏆' },
+              ].map((item,i) => (
+                <div key={i} style={{ display:'flex', alignItems:'center', gap:12 }}>
+                  <span style={{ fontSize:20 }}>{item.icon}</span>
+                  <span style={{ color:'var(--text-muted)', width:100, fontSize:14 }}>{item.l}:</span>
+                  <span style={{ fontWeight:600, fontSize:14 }}>{item.v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ background:'rgba(255,184,77,0.1)', border:'1px solid rgba(255,184,77,0.3)', borderRadius:12, padding:'14px 20px', marginBottom:32, display:'inline-block' }}>
+            <p style={{ color:'#FFB84D', fontSize:13 }}>
+              🎤 Ovozli savollar uchun mikrofon ruxsatini bering
+            </p>
+          </div>
+
+          <div style={{ display:'flex', gap:16, justifyContent:'center' }}>
+            <button className="btn-secondary" onClick={() => setStep(1)}>← Qayta sozlash</button>
+            <button className="btn-primary animate-pulse-btn" onClick={start}
+              style={{ fontSize:18, padding:'16px 48px', borderRadius:14 }}>
+              🚀 Intervyuni Boshlash
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+// ============================================================
+// VOICE INTERVIEW PAGE
+// ============================================================
+const VoiceInterviewPage = () => {
+  const { navigate, interviewConfig, setInterviewState } = useApp();
+  const [phase, setPhase] = useState('intro'); // intro | speaking | listening | evaluating | done
+  const [qIndex, setQIndex] = useState(0);
+  const [transcript, setTranscript] = useState('');
+  const [answers, setAnswers] = useState([]);
+  const [scores, setScores] = useState([]);
+  const [aiSpeaking, setAiSpeaking] = useState(false);
+  const [userSpeaking, setUserSpeaking] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+  const [timer, setTimer] = useState(0);
+  const [totalTime, setTotalTime] = useState(0);
+  const recognitionRef = useRef(null);
+  const synthRef = useRef(window.speechSynthesis);
+  const timerRef = useRef(null);
+
+  const level = interviewConfig?.level || 'junior';
+  const allQuestions = Object.values(INTERVIEW_DATA[level] || INTERVIEW_DATA.junior).flat();
+  const questions = allQuestions.slice(0, 6);
+
+  useEffect(() => {
+    setTimeout(() => greetAndAsk(0), 800);
+    timerRef.current = setInterval(() => setTotalTime(t => t+1), 1000);
+    return () => {
+      clearInterval(timerRef.current);
+      synthRef.current?.cancel();
+      recognitionRef.current?.stop();
+    };
+  }, []);
+
+  const speak = (text, onEnd) => {
+    synthRef.current?.cancel();
+    setAiSpeaking(true);
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'uz-UZ';
+    const voices = synthRef.current.getVoices();
+    const uzVoice = voices.find(v => v.lang.includes('uz')) || voices.find(v => v.lang.includes('ru')) || voices[0];
+    if (uzVoice) utterance.voice = uzVoice;
+    utterance.rate = 0.9; utterance.pitch = 1.1; utterance.volume = 1;
+    utterance.onend = () => { setAiSpeaking(false); onEnd && onEnd(); };
+    utterance.onerror = () => { setAiSpeaking(false); onEnd && onEnd(); };
+    synthRef.current?.speak(utterance);
+  };
+
+  const greetAndAsk = (idx) => {
+    setPhase('speaking');
+    const greeting = idx === 0
+      ? `Assalomu alaykum! Men sizning AI intervyu assistentingizman. Bugun ${level} darajasida frontend bo'yicha savol-javob o'tkazamiz. Tayyor bo'lsangiz, birinchi savolni boshlaymiz.`
+      : null;
+    const questionText = questions[idx]?.q;
+    const fullText = greeting ? `${greeting} Savol: ${questionText}` : `${idx+1}-savol: ${questionText}`;
+
+    speak(fullText, () => {
+      setPhase('listening');
+      startListening();
+    });
+  };
+
+  const startListening = () => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      setTranscript('(Mikrofon ishlamayapti - matn yozing)');
+      setPhase('manual');
+      return;
+    }
+    const rec = new SR();
+    rec.lang = 'uz-UZ';
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.onstart = () => { setUserSpeaking(true); setTranscript(''); setTimer(0); };
+    rec.onresult = (e) => {
+      const t = Array.from(e.results).map(r => r[0].transcript).join('');
+      setTranscript(t);
+    };
+    rec.onend = () => { setUserSpeaking(false); };
+    rec.onerror = () => { setUserSpeaking(false); };
+    recognitionRef.current = rec;
+    rec.start();
+    setTimeout(() => {
+      rec.stop();
+      setTimeout(() => evaluateAnswer(transcript || ''), 500);
+    }, 15000);
+  };
+
+  const submitAnswer = () => {
+    recognitionRef.current?.stop();
+    setTimeout(() => evaluateAnswer(transcript), 300);
+  };
+
+  const evaluateAnswer = (ans) => {
+    setPhase('evaluating');
+    const q = questions[qIndex];
+    const correctKeywords = q.a.toLowerCase().split(' ').filter(w => w.length > 3);
+    const ansLower = (ans || '').toLowerCase();
+    const matches = correctKeywords.filter(kw => ansLower.includes(kw)).length;
+    const score = Math.min(100, Math.round((matches / Math.max(correctKeywords.length, 1)) * 100 + Math.random() * 10));
+    const isCorrect = score >= 50;
+
+    const fb = {
+      question: q.q,
+      userAnswer: ans || '(Javob berilmadi)',
+      correctAnswer: q.a,
+      score, isCorrect,
+      comment: isCorrect
+        ? ['Ajoyib! To\'g\'ri javob berdingiz.', 'Zo\'r! Tushuncha to\'g\'ri.', 'Barakalla! Yaxshi bilasiz.'][Math.floor(Math.random()*3)]
+        : ['Noto\'g\'ri. Yana o\'rganing.', 'Yaxshi urinish, lekin to\'liq emas.', 'Bu savol uchun ko\'proq o\'rganish kerak.'][Math.floor(Math.random()*3)]
+    };
+
+    setFeedback(fb);
+    setScores(prev => [...prev, score]);
+    setAnswers(prev => [...prev, { ...fb }]);
+
+    const voiceFB = isCorrect
+      ? `To'g'ri! ${fb.comment} Ball: ${score}`
+      : `Afsuski, javob to'liq emas. To'g'ri javob: ${q.a.slice(0,80)}`;
+
+    speak(voiceFB, () => {
+      if (qIndex + 1 < questions.length) {
+        setTimeout(() => {
+          setFeedback(null);
+          setTranscript('');
+          setQIndex(qIndex + 1);
+          greetAndAsk(qIndex + 1);
+        }, 1500);
+      } else {
+        speak('Ovozli qism yakunlandi! Endi texnik vazifalar qismiga o\'tamiz. Tayyor bo\'ling!', () => {
+          const avg = Math.round([...scores, score].reduce((a,b)=>a+b,0) / ([...scores, score].length));
+          setInterviewState(prev => ({
+            ...prev, stage:2, answers:[...answers, fb],
+            scores: { voice: avg, coding:0, total:0 }, timeSpent:totalTime
+          }));
+          navigate('coding-interview');
+        });
+      }
+    });
+  };
+
+  const skip = () => {
+    recognitionRef.current?.stop();
+    evaluateAnswer('');
+  };
+
+  const formatTime = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+  return (
+    <div style={{ minHeight:'100vh', background:'var(--bg-dark)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'20px', position:'relative' }}>
+      {/* BG */}
+      <div style={{ position:'fixed', inset:0, background:'radial-gradient(ellipse at 50% 0%, rgba(108,99,255,0.12) 0%, transparent 60%)', pointerEvents:'none' }}/>
+
+      {/* Header */}
+      <div style={{ position:'fixed', top:0, left:0, right:0, padding:'16px 32px', background:'rgba(10,11,20,0.9)', backdropFilter:'blur(20px)', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'space-between', zIndex:100 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontSize:20 }}>🎤</span>
+          <span style={{ fontWeight:700 }}>Bosqich 1: Ovozli Intervyu</span>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:20 }}>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', color:'var(--primary)', fontSize:18, fontWeight:700 }}>
+            ⏱ {formatTime(totalTime)}
+          </div>
+          <div style={{ color:'var(--text-secondary)', fontSize:13 }}>
+            {qIndex+1} / {questions.length}
+          </div>
+          <button onClick={() => { synthRef.current?.cancel(); navigate('setup'); }} className="btn-danger" style={{padding:'8px 16px', fontSize:13}}>
+            Chiqish
+          </button>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ position:'fixed', top:60, left:0, right:0, height:3, background:'var(--border)' }}>
+        <div style={{ height:'100%', background:'linear-gradient(90deg, #6C63FF, #FF6584)', width:`${((qIndex+1)/questions.length)*100}%`, transition:'width 0.6s ease' }}/>
+      </div>
+
+      {/* Main Content */}
+      <div style={{ maxWidth:760, width:'100%', marginTop:80 }}>
+        {/* AI Avatar */}
+        <div style={{ textAlign:'center', marginBottom:40 }}>
+          <div style={{ position:'relative', display:'inline-block' }}>
+            <div style={{
+              width:120, height:120, borderRadius:'50%',
+              background:'linear-gradient(135deg, #6C63FF, #FF6584)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontSize:52, margin:'0 auto',
+              boxShadow: aiSpeaking ? '0 0 40px rgba(108,99,255,0.6)' : '0 0 20px rgba(108,99,255,0.2)',
+              transition:'box-shadow 0.3s ease',
+              animation: aiSpeaking ? 'glow 1s ease-in-out infinite' : 'none'
+            }}>🤖</div>
+            {aiSpeaking && (
+              <div style={{ position:'absolute', inset:-8, borderRadius:'50%', border:'3px solid rgba(108,99,255,0.4)', animation:'ripple 1.5s ease-out infinite' }}/>
+            )}
+          </div>
+          <div style={{ marginTop:16, fontSize:14, color:'var(--text-secondary)' }}>
+            {phase === 'speaking' ? '🔊 Gapirmoqda...' :
+             phase === 'listening' ? '👂 Tinglayapman...' :
+             phase === 'evaluating' ? '⚡ Baholamoqda...' :
+             phase === 'manual' ? '✍️ Matn yozing' : '⏳ Tayyorlanmoqda...'}
+          </div>
+          {(aiSpeaking || userSpeaking) && (
+            <div style={{ display:'flex', justifyContent:'center', marginTop:12 }}>
+              <VoiceWaveform isActive={true} color={aiSpeaking ? '#6C63FF' : '#43E97B'} size="md" />
+            </div>
+          )}
+        </div>
+
+        {/* Question Card */}
+        {questions[qIndex] && (
+          <div className="glass-card" style={{ padding:32, marginBottom:24, textAlign:'center' }}>
+            <div style={{ fontSize:12, color:'var(--text-muted)', marginBottom:8, textTransform:'uppercase', letterSpacing:1 }}>
+              Savol {qIndex+1}/{questions.length}
+            </div>
+            <h2 style={{ fontSize:22, fontWeight:700, lineHeight:1.5, color:'white' }}>
+              {questions[qIndex].q}
+            </h2>
+          </div>
+        )}
+
+        {/* Transcript / Manual Input */}
+        <div className="glass-card" style={{ padding:24, marginBottom:24 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+            <span style={{ color: userSpeaking ? '#43E97B' : 'var(--text-muted)', fontSize:13 }}>
+              {userSpeaking ? '🔴 Yozilmoqda...' : '📝 Javobingiz:'}
+            </span>
+          </div>
+          {phase === 'manual' ? (
+            <textarea className="input-field" rows={4} value={transcript}
+              onChange={e => setTranscript(e.target.value)}
+              placeholder="Javobingizni bu yerga yozing..."
+              style={{ fontFamily:'Inter', resize:'vertical' }} />
+          ) : (
+            <div style={{ minHeight:80, color: transcript ? 'white' : 'var(--text-muted)', fontSize:16, lineHeight:1.7 }}>
+              {transcript || (phase === 'listening' ? 'Gapiring yoki quyida "Javob berish" tugmasini bosing...' : '...')}
+            </div>
+          )}
+        </div>
+
+        {/* Feedback */}
+        {feedback && (
+          <div className="animate-bounceIn glass-card" style={{
+            padding:24, marginBottom:24,
+            borderColor: feedback.isCorrect ? 'rgba(67,233,123,0.4)' : 'rgba(255,77,106,0.4)',
+            background: feedback.isCorrect ? 'rgba(67,233,123,0.05)' : 'rgba(255,77,106,0.05)'
+          }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+              <span style={{ fontSize:24 }}>{feedback.isCorrect ? '✅' : '❌'}</span>
+              <span style={{ fontWeight:700, fontSize:18, color: feedback.isCorrect ? '#43E97B' : '#FF4D6A' }}>
+                {feedback.isCorrect ? 'To\'g\'ri!' : 'Noto\'g\'ri'} — {feedback.score} ball
+              </span>
+            </div>
+            <p style={{ color:'var(--text-secondary)', fontSize:14, marginBottom:8 }}>{feedback.comment}</p>
+            {!feedback.isCorrect && (
+              <p style={{ fontSize:13, color:'var(--text-muted)' }}>
+                💡 To'g'ri javob: <span style={{ color:'white' }}>{feedback.correctAnswer}</span>
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Controls */}
+        <div style={{ display:'flex', gap:12, justifyContent:'center' }}>
+          {phase === 'listening' && (
+            <>
+              <button onClick={submitAnswer} className="btn-success" style={{ padding:'14px 32px', fontSize:15 }}>
+                ✋ Javob berish
+              </button>
+              <button onClick={skip} className="btn-secondary" style={{ padding:'14px 24px' }}>
+                ⏭ O'tkazib yuborish
+              </button>
+            </>
+          )}
+          {phase === 'manual' && (
+            <button onClick={() => evaluateAnswer(transcript)} className="btn-primary" style={{ padding:'14px 32px' }}>
+              📤 Javobni Yuborish
+            </button>
+          )}
+        </div>
+
+        {/* Score mini bar */}
+        {scores.length > 0 && (
+          <div style={{ marginTop:32, display:'flex', justifyContent:'center', gap:8 }}>
+            {scores.map((s,i) => (
+              <div key={i} style={{
+                width:36, height:36, borderRadius:'50%', fontSize:11, fontWeight:700,
+                background: s>=70 ? 'rgba(67,233,123,0.2)' : 'rgba(255,77,106,0.2)',
+                border: `2px solid ${s>=70 ? '#43E97B' : '#FF4D6A'}`,
+                color: s>=70 ? '#43E97B' : '#FF4D6A',
+                display:'flex', alignItems:'center', justifyContent:'center'
+              }}>{s}</div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+// ============================================================
+// CODING INTERVIEW PAGE
+// ============================================================
+const CodingInterviewPage = () => {
+  const { navigate, interviewConfig, interviewState, setInterviewState } = useApp();
+  const [chalIdx, setChalIdx] = useState(0);
+  const [code, setCode] = useState('');
+  const [output, setOutput] = useState('');
+  const [outputType, setOutputType] = useState('idle'); // idle|running|success|error
+  const [scores, setScores] = useState([]);
+  const [solvedAll, setSolvedAll] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [showHint, setShowHint] = useState(false);
+  const [theme, setTheme] = useState('dark');
+  const timerRef = useRef(null);
+  const synthRef = useRef(window.speechSynthesis);
+
+  const level = interviewConfig?.level || 'junior';
+  const challenges = CODING_CHALLENGES[level] || CODING_CHALLENGES.junior;
+
+  useEffect(() => {
+    setCode(challenges[chalIdx]?.template || '');
+    setOutput('');
+    setOutputType('idle');
+    setShowHint(false);
+    setTimer(0);
+  }, [chalIdx]);
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => setTimer(t => t+1), 1000);
+    // Welcome voice
+    const synth = window.speechSynthesis;
+    const u = new SpeechSynthesisUtterance('Ikkinchi bosqich: texnik intervyu. Berilgan masalalarni hal qiling. Tayyor bo\'lsangiz boshlang!');
+    u.lang = 'uz-UZ'; u.rate = 0.9;
+    setTimeout(() => synth.speak(u), 500);
+    return () => { clearInterval(timerRef.current); synth.cancel(); };
+  }, []);
+
+  const runCode = () => {
+    setOutputType('running');
+    setOutput('⚡ Ishga tushirilmoqda...');
+
+    setTimeout(() => {
+      try {
+        const logs = [];
+        const mockConsole = { log: (...args) => logs.push(args.map(a => JSON.stringify(a) !== undefined ? (typeof a === 'object' ? JSON.stringify(a) : String(a)) : 'undefined').join(' ')) };
+        const fn = new Function('console', code);
+        fn(mockConsole);
+        const result = logs.join('\n');
+        setOutput(result || '(chiqish yo\'q)');
+        setOutputType('success');
+
+        const chal = challenges[chalIdx];
+        const expected = chal.expected?.trim();
+        if (expected && result.trim().startsWith(expected.split('\n')[0].trim())) {
+          const score = Math.max(60, 100 - Math.floor(timer/10));
+          setScores(prev => { const n=[...prev]; n[chalIdx]=score; return n; });
+          const synth = window.speechSynthesis;
+          const u = new SpeechSynthesisUtterance(`Barakalla! Masala to'g'ri yechildi. ${score} ball!`);
+          u.lang='uz-UZ'; u.rate=0.9; synth.speak(u);
+        }
+      } catch(err) {
+        setOutput(`❌ Xato: ${err.message}`);
+        setOutputType('error');
+      }
+    }, 600);
+  };
+
+  const resetCode = () => { setCode(challenges[chalIdx]?.template || ''); setOutput(''); setOutputType('idle'); };
+
+  const nextChallenge = () => {
+    if (chalIdx + 1 < challenges.length) {
+      setChalIdx(chalIdx + 1);
+    } else {
+      const avgCodingScore = scores.length > 0 ? Math.round(scores.reduce((a,b)=>a+(b||0),0)/challenges.length) : 60;
+      const voiceScore = interviewState.scores.voice || 70;
+      const total = Math.round(voiceScore * 0.4 + avgCodingScore * 0.6);
+      setInterviewState(prev => ({
+        ...prev,
+        scores: { voice: voiceScore, coding: avgCodingScore, total },
+        codingAnswers: scores
+      }));
+      const synth = window.speechSynthesis;
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(`Intervyu tugadi! Umumiy ballingiz ${total} ball. Natijalar sahifasiga o'tamiz.`);
+      u.lang='uz-UZ'; u.rate=0.9;
+      synth.speak(u);
+      setTimeout(() => navigate('results'), 2000);
+    }
+  };
+
+  const formatTime = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  const chal = challenges[chalIdx];
+  const isSolved = scores[chalIdx] !== undefined;
+
+  return (
+    <div style={{ minHeight:'100vh', background:'var(--bg-dark)', display:'flex', flexDirection:'column' }}>
+      {/* Header */}
+      <div style={{
+        padding:'14px 24px', background:'rgba(10,11,20,0.95)', backdropFilter:'blur(20px)',
+        borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0
+      }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontSize:20 }}>💻</span>
+          <span style={{ fontWeight:700 }}>Bosqich 2: Texnik Intervyu</span>
+          <div className="badge badge-junior" style={{
+            background: level==='junior' ? 'rgba(67,233,123,0.15)' : level==='middle' ? 'rgba(77,195,255,0.15)' : 'rgba(255,184,77,0.15)',
+            color: level==='junior' ? '#43E97B' : level==='middle' ? '#4DC3FF' : '#FFB84D',
+          }}>{level}</div>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
+          <div style={{ fontFamily:'JetBrains Mono, monospace', color: timer>300?'#FF4D6A':'var(--primary)', fontSize:18, fontWeight:700 }}>
+            ⏱ {formatTime(timer)}
+          </div>
+          <div style={{ display:'flex', gap:6 }}>
+            {challenges.map((_,i) => (
+              <div key={i} onClick={() => setChalIdx(i)} style={{
+                width:32, height:32, borderRadius:8, cursor:'pointer',
+                background: scores[i] ? 'rgba(67,233,123,0.2)' : i===chalIdx ? 'rgba(108,99,255,0.3)' : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${scores[i] ? '#43E97B' : i===chalIdx ? 'var(--primary)' : 'var(--border)'}`,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize:12, fontWeight:700, color: scores[i] ? '#43E97B' : i===chalIdx ? 'var(--primary)' : 'var(--text-muted)'
+              }}>{scores[i] ? '✓' : i+1}</div>
+            ))}
+          </div>
+          <button onClick={() => { synthRef.current?.cancel(); navigate('setup'); }} className="btn-danger" style={{padding:'8px 16px', fontSize:13}}>
+            Chiqish
+          </button>
+        </div>
+      </div>
+
+      {/* Main Editor Layout */}
+      <div style={{ flex:1, display:'grid', gridTemplateColumns:'1fr 1fr', gap:0, overflow:'hidden' }}>
+        {/* Left: Problem */}
+        <div style={{ borderRight:'1px solid var(--border)', overflow:'auto', padding:24 }}>
+          {/* Challenge header */}
+          <div style={{ marginBottom:20 }}>
+            <div style={{ display:'flex', align:'center', gap:10, marginBottom:12, flexWrap:'wrap' }}>
+              <span style={{ fontWeight:800, fontSize:20 }}>{chal?.title}</span>
+              <span style={{
+                padding:'4px 10px', borderRadius:20, fontSize:12, fontWeight:600,
+                background: chal?.difficulty==='Oson' ? 'rgba(67,233,123,0.15)' : chal?.difficulty==="O'rta" ? 'rgba(255,184,77,0.15)' : 'rgba(255,77,106,0.15)',
+                color: chal?.difficulty==='Oson' ? '#43E97B' : chal?.difficulty==="O'rta" ? '#FFB84D' : '#FF4D6A'
+              }}>{chal?.difficulty}</span>
+              {isSolved && <span style={{ padding:'4px 10px', borderRadius:20, fontSize:12, background:'rgba(67,233,123,0.15)', color:'#43E97B' }}>✓ Yechildi: {scores[chalIdx]} ball</span>}
+            </div>
+            <div style={{
+              background:'rgba(255,255,255,0.03)', borderRadius:12, padding:20,
+              border:'1px solid var(--border)', color:'var(--text-secondary)',
+              fontSize:14, lineHeight:1.8, whiteSpace:'pre-wrap'
+            }}>{chal?.description}</div>
+          </div>
+
+          {/* Hint */}
+          <div style={{ marginBottom:20 }}>
+            <button onClick={() => setShowHint(!showHint)} style={{
+              background:'rgba(255,184,77,0.1)', border:'1px solid rgba(255,184,77,0.3)',
+              color:'#FFB84D', padding:'8px 16px', borderRadius:8, cursor:'pointer', fontSize:13, fontWeight:500
+            }}>
+              {showHint ? '🔼 Maslahatni yashirish' : '💡 Maslahat ko\'rish'}
+            </button>
+            {showHint && (
+              <div style={{ marginTop:12, padding:14, background:'rgba(255,184,77,0.07)', borderRadius:10, border:'1px solid rgba(255,184,77,0.2)', color:'#FFB84D', fontSize:13 }}>
+                💡 {chal?.hint}
+              </div>
+            )}
+          </div>
+
+          {/* Output */}
+          <div style={{ background:'#080910', borderRadius:12, border:'1px solid var(--border)', overflow:'hidden' }}>
+            <div style={{
+              padding:'10px 16px',
+              borderBottom:'1px solid var(--border)',
+              display:'flex', alignItems:'center', gap:8, fontSize:13
+            }}>
+              <span style={{
+                color: outputType==='success' ? '#43E97B' : outputType==='error' ? '#FF4D6A' : outputType==='running' ? '#FFB84D' : 'var(--text-muted)'
+              }}>
+                {outputType==='success' ? '✅' : outputType==='error' ? '❌' : outputType==='running' ? '⚡' : '▶'} Natija
+              </span>
+            </div>
+            <div style={{
+              padding:16, fontFamily:'JetBrains Mono, monospace', fontSize:13,
+              color: outputType==='error' ? '#FF4D6A' : outputType==='success' ? '#43E97B' : 'var(--text-secondary)',
+              minHeight:120, whiteSpace:'pre-wrap', lineHeight:1.6
+            }}>
+              {output || 'Kodni ishga tushiring...'}
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Code Editor */}
+        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
+          {/* Editor Toolbar */}
+          <div style={{
+            padding:'10px 16px', borderBottom:'1px solid var(--border)',
+            display:'flex', alignItems:'center', justifyContent:'space-between', background:'#0D0E1A'
+          }}>
+            <div style={{ display:'flex', gap:6 }}>
+              {['●','●','●'].map((d,i) => (
+                <div key={i} style={{ width:12, height:12, borderRadius:'50%', background:['#FF5F57','#FEBC2E','#28C840'][i] }}/>
+              ))}
+            </div>
+            <span style={{ fontSize:12, color:'var(--text-muted)', fontFamily:'JetBrains Mono, monospace' }}>
+              solution.js
+            </span>
+            <button onClick={resetCode} style={{ background:'transparent', border:'none', color:'var(--text-muted)', fontSize:12, cursor:'pointer' }}>
+              🔄 Reset
+            </button>
+          </div>
+
+          {/* Code Editor */}
+          <textarea
+            className="code-editor"
+            value={code}
+            onChange={e => setCode(e.target.value)}
+            style={{ flex:1, borderRadius:0, border:'none', borderBottom:'1px solid var(--border)', resize:'none' }}
+            onKeyDown={e => {
+              if (e.key === 'Tab') { e.preventDefault(); const s=e.target.selectionStart; const v=code; setCode(v.slice(0,s)+'  '+v.slice(s)); setTimeout(()=>{ e.target.selectionStart=e.target.selectionEnd=s+2; }, 0); }
+            }}
+            spellCheck={false}
+          />
+
+          {/* Run Controls */}
+          <div style={{ padding:16, background:'#0D0E1A', display:'flex', gap:10, borderTop:'1px solid var(--border)' }}>
+            <button onClick={runCode} className="btn-success" style={{ flex:1, justifyContent:'center', padding:'12px' }}>
+              ▶ Ishga Tushurish
+            </button>
+            <button onClick={nextChallenge} className="btn-primary" style={{ padding:'12px 20px' }}>
+              {chalIdx + 1 < challenges.length ? 'Keyingisi →' : '🏁 Yakunlash'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// ============================================================
+// RESULTS PAGE
+// ============================================================
+const ResultsPage = () => {
+  const { navigate, interviewState, interviewConfig, user } = useApp();
+  const [animScore, setAnimScore] = useState(0);
+  const [feedbackPlayed, setFeedbackPlayed] = useState(false);
+  const [tab, setTab] = useState('overview');
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  const { scores = {}, answers = [] } = interviewState;
+  const total = scores.total || 0;
+  const voice = scores.voice || 0;
+  const coding = scores.coding || 0;
+
+  useEffect(() => {
+    let count = 0;
+    const interval = setInterval(() => {
+      count += 2;
+      if (count >= total) { setAnimScore(total); clearInterval(interval); }
+      else setAnimScore(count);
+    }, 30);
+    return () => clearInterval(interval);
+  }, [total]);
+
+  useEffect(() => {
+    if (!feedbackPlayed) {
+      setFeedbackPlayed(true);
+      setTimeout(() => {
+        const synth = window.speechSynthesis;
+        synth.cancel();
+        const grade = total >= 85 ? 'ajoyib' : total >= 70 ? 'yaxshi' : total >= 50 ? "qoniqarli" : 'past';
+        const msg = `Intervyu yakunlandi! Umumiy balingiz ${total} ball. Bu ${grade} natija. `
+          + (total >= 80 ? 'Siz bu daraja uchun juda yaxshi tayyorlanibsiz. Tabriklayman!' :
+             total >= 60 ? "Asosiy bilimlarda kuchli ekansiz. Ba'zi sohalarda yana mashq qilish kerak." :
+             "Ko'proq amaliyot kerak. Asosiy tushunchalarni mustahkamlang va qayta urinib ko'ring.");
+        const u = new SpeechSynthesisUtterance(msg);
+        u.lang = 'uz-UZ'; u.rate = 0.85; u.pitch = 1.1;
+        synth.speak(u);
+      }, 1500);
+    }
+  }, []);
+
+  const scoreColor = total >= 85 ? '#43E97B' : total >= 70 ? '#4DC3FF' : total >= 50 ? '#FFB84D' : '#FF4D6A';
+  const grade = total >= 85 ? 'Ajoyib! 🎉' : total >= 70 ? 'Yaxshi! 👍' : total >= 50 ? "Qoniqarli 📚" : "Ko'proq Mashq 💪";
+  const level = interviewConfig?.level || 'junior';
+
+  const improvements = [
+    total < 80 && { area: 'Asosiy tushunchalar', tip: 'MDN va official hujjatlarni ko\'proq o\'qing' },
+    coding < 70 && { area: 'Algoritmik fikrlash', tip: 'LeetCode va HackerRank da kunlik mashq qiling' },
+    voice < 70 && { area: 'Og\'zaki ifodalash', tip: 'Texnik terminlarni vaqt o\'lchab tushuntirish mashq qiling' },
+    total < 90 && { area: 'Performance optimizatsiya', tip: 'React DevTools Profiler va Lighthouse bilan ishlang' },
+  ].filter(Boolean);
+
+  const submitReview = () => {
+    if (!rating) return;
+    setReviewSubmitted(true);
+    const synth = window.speechSynthesis;
+    const u = new SpeechSynthesisUtterance('Fikringiz uchun rahmat! Bu bizga yaxshilanishga yordam beradi.');
+    u.lang='uz-UZ'; synth.speak(u);
+  };
+
+  return (
+    <div style={{ minHeight:'100vh', paddingTop:100, padding:'100px 20px 60px', maxWidth:960, margin:'0 auto' }}>
+      {/* Hero Score */}
+      <div style={{ textAlign:'center', marginBottom:60 }}>
+        <div className="animate-bounceIn" style={{ marginBottom:24 }}>
+          <div style={{
+            width:200, height:200, borderRadius:'50%', margin:'0 auto',
+            background:`conic-gradient(${scoreColor} 0deg ${animScore*3.6}deg, rgba(255,255,255,0.05) ${animScore*3.6}deg 360deg)`,
+            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+            position:'relative', boxShadow:`0 0 60px ${scoreColor}44`
+          }}>
+            <div style={{
+              width:170, height:170, borderRadius:'50%',
+              background:'var(--bg-dark)', position:'absolute',
+              display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center'
+            }}>
+              <div style={{ fontSize:52, fontWeight:900, color:scoreColor }}>{animScore}</div>
+              <div style={{ fontSize:14, color:'var(--text-muted)' }}>/ 100 ball</div>
+            </div>
+          </div>
+        </div>
+        <h1 style={{ fontSize:40, fontWeight:900, marginBottom:8 }}>{grade}</h1>
+        <p style={{ color:'var(--text-secondary)', fontSize:18, marginBottom:24 }}>
+          {level.charAt(0).toUpperCase()+level.slice(1)} darajasida intervyu yakunlandi
+        </p>
+        <div style={{ display:'flex', gap:16, justifyContent:'center', flexWrap:'wrap' }}>
+          <button onClick={() => navigate('setup')} className="btn-primary" style={{ padding:'14px 32px' }}>
+            🔄 Qayta Urinish
+          </button>
+          <button onClick={() => navigate('dashboard')} className="btn-secondary" style={{ padding:'14px 32px' }}>
+            📊 Dashboard
+          </button>
+          <button onClick={() => navigate('landing')} className="btn-secondary" style={{ padding:'14px 32px' }}>
+            🏠 Bosh Sahifa
+          </button>
+        </div>
+      </div>
+
+      {/* Score Breakdown */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px,1fr))', gap:16, marginBottom:40 }}>
+        {[
+          { label:'Ovozli Intervyu', value:voice, icon:'🎤', color:'#6C63FF', weight:'40%' },
+          { label:'Texnik Kodlash', value:coding, icon:'💻', color:'#4DC3FF', weight:'60%' },
+          { label:'Umumiy Ball', value:total, icon:'🏆', color:scoreColor, weight:'100%' },
+          { label:'Sarflangan Vaqt', value:`${Math.floor((interviewState.timeSpent||300)/60)}`, unit:'daq', icon:'⏱', color:'#FFB84D', weight:'' },
+        ].map((s,i) => (
+          <div key={i} className="glass-card" style={{ padding:24, textAlign:'center' }}>
+            <div style={{ fontSize:32, marginBottom:8 }}>{s.icon}</div>
+            <div style={{ fontSize:36, fontWeight:900, color:s.color }}>
+              {s.value}{s.unit || (s.weight ? '' : '')}
+            </div>
+            <div style={{ fontSize:12, color:'var(--text-muted)', marginBottom:6 }}>{s.label}</div>
+            {s.weight && (
+              <div className="progress-bar" style={{ marginTop:8 }}>
+                <div className="progress-fill" style={{ width:`${s.value}%`, background:s.color }}/>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display:'flex', gap:4, marginBottom:24, background:'rgba(255,255,255,0.03)', borderRadius:12, padding:4 }}>
+        {['overview', 'answers', 'improve'].map(t => (
+          <button key={t} onClick={() => setTab(t)} className={`tab-btn ${tab===t?'active':''}`}
+            style={{ flex:1, textAlign:'center' }}>
+            {t==='overview' ? '📊 Tahlil' : t==='answers' ? '📝 Javoblar' : '💡 Maslahatlar'}
+          </button>
+        ))}
+      </div>
+
+      {/* Overview Tab */}
+      {tab === 'overview' && (
+        <div className="animate-fadeIn">
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px,1fr))', gap:16 }}>
+            <div className="glass-card" style={{ padding:24 }}>
+              <h3 style={{ fontSize:16, fontWeight:700, marginBottom:16 }}>📊 Ball taqsimoti</h3>
+              {[
+                { label:'Nazariy bilim', val:voice, color:'#6C63FF' },
+                { label:'Kod yozish', val:coding, color:'#4DC3FF' },
+                { label:'Muammo hal qilish', val:Math.round((voice+coding)/2*0.9+10), color:'#43E97B' },
+                { label:'Kommunikatsiya', val:Math.round(voice*0.8+20), color:'#FFB84D' },
+              ].map((item,i) => (
+                <div key={i} style={{ marginBottom:12 }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', fontSize:13, marginBottom:4 }}>
+                    <span style={{ color:'var(--text-secondary)' }}>{item.label}</span>
+                    <span style={{ fontWeight:600, color:item.color }}>{item.val}/100</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width:`${item.val}%`, background:item.color }}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="glass-card" style={{ padding:24 }}>
+              <h3 style={{ fontSize:16, fontWeight:700, marginBottom:16 }}>🎯 Tavsiya</h3>
+              <div style={{
+                padding:16, borderRadius:12,
+                background: total>=85 ? 'rgba(67,233,123,0.1)' : total>=70 ? 'rgba(77,195,255,0.1)' : 'rgba(255,184,77,0.1)',
+                border: `1px solid ${total>=85 ? 'rgba(67,233,123,0.3)' : total>=70 ? 'rgba(77,195,255,0.3)' : 'rgba(255,184,77,0.3)'}`,
+                fontSize:14, lineHeight:1.8, color:'var(--text-secondary)'
+              }}>
+                {total >= 85
+                  ? '🌟 Siz ajoyib bilimga egasiz! Senior darajasiga o\'tishga tayyorsiz. Portfolio yarating va ariza topshiring!'
+                  : total >= 70
+                  ? '✨ Yaxshi natija! Algoritmlar va system design bo\'yicha chuqurroq o\'rganing. Middle daraja uchun tayyor.'
+                  : total >= 50
+                  ? '📚 Asosiy tushunchalarni mustahkamlang. Amaliy loyihalar qiling va open source ga hissa qo\'shing.'
+                  : '💪 Asosiylardan boshlang: HTML/CSS/JS core. Kuniga 2-3 soat mashq qiling. 3 oyda sezilarli o\'sish bo\'ladi.'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Answers Tab */}
+      {tab === 'answers' && (
+        <div className="animate-fadeIn" style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          {answers.length > 0 ? answers.map((a,i) => (
+            <div key={i} className="glass-card" style={{
+              padding:20,
+              borderColor: a.isCorrect ? 'rgba(67,233,123,0.2)' : 'rgba(255,77,106,0.2)'
+            }}>
+              <div style={{ display:'flex', gap:8, alignItems:'flex-start', marginBottom:10 }}>
+                <span style={{ fontSize:20 }}>{a.isCorrect ? '✅' : '❌'}</span>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontWeight:600, fontSize:15, marginBottom:4 }}>{a.question}</div>
+                  <div style={{ fontSize:13, color:'var(--text-muted)' }}>
+                    Sizning javobingiz: <span style={{ color:'white' }}>{a.userAnswer || '(berilmadi)'}</span>
+                  </div>
+                  {!a.isCorrect && (
+                    <div style={{ fontSize:13, color:'var(--text-muted)', marginTop:4 }}>
+                      To'g'ri javob: <span style={{ color:'#43E97B' }}>{a.correctAnswer}</span>
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize:16, fontWeight:700, color: a.score>=70 ? '#43E97B' : '#FF4D6A' }}>
+                  {a.score || 0}%
+                </div>
+              </div>
+            </div>
+          )) : (
+            <div style={{ textAlign:'center', color:'var(--text-muted)', padding:40 }}>
+              Javoblar mavjud emas
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Improve Tab */}
+      {tab === 'improve' && (
+        <div className="animate-fadeIn">
+          <div style={{ display:'flex', flexDirection:'column', gap:16, marginBottom:32 }}>
+            {improvements.map((imp,i) => (
+              <div key={i} className="glass-card" style={{ padding:20, display:'flex', gap:16, alignItems:'center' }}>
+                <div style={{ width:44, height:44, borderRadius:12, background:'rgba(108,99,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>
+                  {['📖','⚡','🗣️','⚙️'][i] || '💡'}
+                </div>
+                <div>
+                  <div style={{ fontWeight:700, marginBottom:4 }}>{imp.area}</div>
+                  <div style={{ fontSize:13, color:'var(--text-secondary)' }}>{imp.tip}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Resources */}
+          <h3 style={{ fontSize:18, fontWeight:700, marginBottom:16 }}>📚 Tavsiya etilgan resurslar</h3>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px,1fr))', gap:12 }}>
+            {[
+              { name:'MDN Web Docs', desc:'Official hujjatlar', icon:'🌐', color:'#4DC3FF' },
+              { name:'React.dev', desc:'React rasmiy sayti', icon:'⚛️', color:'#6C63FF' },
+              { name:'javascript.info', desc:'JS chuqur o\'rganish', icon:'⚡', color:'#FFB84D' },
+              { name:'LeetCode', desc:'Algoritmlar mashqi', icon:'🧩', color:'#43E97B' },
+            ].map((r,i) => (
+              <div key={i} className="glass-card" style={{ padding:16, cursor:'pointer', transition:'var(--transition)' }}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=r.color}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=''}>
+                <div style={{ fontSize:24, marginBottom:8 }}>{r.icon}</div>
+                <div style={{ fontWeight:600, fontSize:14 }}>{r.name}</div>
+                <div style={{ fontSize:12, color:'var(--text-muted)' }}>{r.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Rating Section */}
+      <div className="glass-card" style={{ padding:28, marginTop:40, textAlign:'center' }}>
+        <h3 style={{ fontSize:18, fontWeight:700, marginBottom:8 }}>🌟 Platformani baholang</h3>
+        <p style={{ color:'var(--text-secondary)', fontSize:14, marginBottom:20 }}>Sizning fikringiz bizni rivojlantirishga yordam beradi</p>
+        {!reviewSubmitted ? (
+          <>
+            <div style={{ display:'flex', gap:8, justifyContent:'center', marginBottom:20 }}>
+              {[1,2,3,4,5].map(s => (
+                <span key={s} className={`star ${s<=rating?'active':''}`}
+                  onClick={() => setRating(s)} style={{ fontSize:36, cursor:'pointer' }}>★</span>
+              ))}
+            </div>
+            <textarea className="input-field" rows={3} value={reviewText}
+              onChange={e => setReviewText(e.target.value)}
+              placeholder="Izohingizni yozing (ixtiyoriy)..."
+              style={{ maxWidth:480, margin:'0 auto', display:'block', marginBottom:16 }} />
+            <button onClick={submitReview} className="btn-primary" disabled={!rating}
+              style={{ padding:'12px 32px' }}>
+              📤 Yuborish
+            </button>
+          </>
+        ) : (
+          <div style={{ color:'#43E97B', fontSize:18, fontWeight:700 }}>
+            ✅ Rahmat! Baholash qabul qilindi.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+// ============================================================
+// DASHBOARD PAGE
+// ============================================================
+const DashboardPage = () => {
+  const { navigate, user, isPro, setIsPro } = useApp();
+  const [tab, setTab] = useState('stats');
+
+  const mockHistory = [
+    { date:'2024-12-15', level:'Junior', score:78, time:'24 daq', status:'completed' },
+    { date:'2024-12-10', level:'Junior', score:65, time:'31 daq', status:'completed' },
+    { date:'2024-12-05', level:'Middle', score:52, time:'45 daq', status:'completed' },
+  ];
+
+  const achievements = [
+    { icon:'🎯', title:'Birinchi Intervyu', desc:'Birinchi intervyudan o\'tdi', earned:true },
+    { icon:'🔥', title:'3 ta seriya', desc:'3 kun ketma-ket', earned:true },
+    { icon:'💯', title:'90+ ball', desc:'90 dan yuqori ball', earned:false },
+    { icon:'⚡', title:'Speed Runner', desc:'20 daqiqa ichida', earned:false },
+    { icon:'🏆', title:'Senior Ready', desc:'Senior savollarini yechildi', earned:false },
+    { icon:'🌟', title:'Perfectionist', desc:'100 ball oldi', earned:false },
+  ];
+
+  if (!user) {
+    return (
+      <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', textAlign:'center', paddingTop:80 }}>
+        <div>
+          <div style={{ fontSize:80, marginBottom:20 }}>🔒</div>
+          <h2 style={{ fontSize:28, fontWeight:700, marginBottom:12 }}>Kirish talab etiladi</h2>
+          <p style={{ color:'var(--text-secondary)', marginBottom:24 }}>Dashboard ko'rish uchun ro'yxatdan o'ting</p>
+          <button onClick={() => navigate('landing')} className="btn-primary">Bosh sahifaga qaytish</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight:'100vh', paddingTop:80, padding:'80px 20px 60px', maxWidth:1100, margin:'0 auto' }}>
+      {/* Profile Header */}
+      <div className="glass-card" style={{ padding:32, marginBottom:24, display:'flex', alignItems:'center', gap:24, flexWrap:'wrap' }}>
+        <div style={{
+          width:80, height:80, borderRadius:'50%',
+          background:'linear-gradient(135deg, #6C63FF, #FF6584)',
+          display:'flex', alignItems:'center', justifyContent:'center', fontSize:32, fontWeight:700
+        }}>{user.name?.[0]?.toUpperCase()}</div>
+        <div style={{ flex:1 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:4 }}>
+            <h2 style={{ fontSize:24, fontWeight:800 }}>{user.name}</h2>
+            {isPro && <span className="badge badge-pro">PRO</span>}
+          </div>
+          <div style={{ color:'var(--text-muted)', fontSize:14 }}>{user.email}</div>
+          <div style={{ color:'var(--text-muted)', fontSize:12, marginTop:4 }}>Qo'shildi: {user.joinDate}</div>
+        </div>
+        <div style={{ display:'flex', gap:24 }}>
+          {[
+            { v: mockHistory.length, l:'Intervyular' },
+            { v: Math.max(...mockHistory.map(h=>h.score), 0), l:'Eng yuqori ball' },
+            { v: Math.round(mockHistory.reduce((a,h)=>a+h.score,0)/mockHistory.length)||0, l:"O'rta ball" },
+          ].map((s,i) => (
+            <div key={i} style={{ textAlign:'center' }}>
+              <div style={{ fontSize:28, fontWeight:800, color:'var(--primary)' }}>{s.v}</div>
+              <div style={{ fontSize:12, color:'var(--text-muted)' }}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+        <button onClick={() => navigate('setup')} className="btn-primary">
+          🎯 Yangi Intervyu
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display:'flex', gap:4, marginBottom:24, background:'rgba(255,255,255,0.03)', borderRadius:12, padding:4 }}>
+        {['stats', 'history', 'achievements'].map(t => (
+          <button key={t} onClick={() => setTab(t)} className={`tab-btn ${tab===t?'active':''}`}
+            style={{ flex:1, textAlign:'center' }}>
+            {t==='stats' ? '📊 Statistika' : t==='history' ? '📋 Tarix' : '🏅 Yutuqlar'}
+          </button>
+        ))}
+      </div>
+
+      {/* Stats */}
+      {tab === 'stats' && (
+        <div className="animate-fadeIn">
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px,1fr))', gap:16, marginBottom:24 }}>
+            {[
+              { label:'Jami Intervyu', val:mockHistory.length, icon:'🎯', color:'#6C63FF', sub:'+1 bu hafta' },
+              { label:'Eng Yuqori Ball', val:78, icon:'🏆', color:'#FFD700', sub:'Junior daraja' },
+              { label:"O'rta Ball", val:65, icon:'📊', color:'#4DC3FF', sub:'Barcha intervyular' },
+              { label:'Jami Vaqt', val:'1.7 soat', icon:'⏱', color:'#43E97B', sub:'Mashq vaqti' },
+            ].map((s,i) => (
+              <div key={i} className="glass-card" style={{ padding:24 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize:13, color:'var(--text-muted)', marginBottom:8 }}>{s.label}</div>
+                    <div style={{ fontSize:32, fontWeight:800, color:s.color }}>{s.val}</div>
+                    <div style={{ fontSize:12, color:'var(--text-muted)', marginTop:4 }}>{s.sub}</div>
+                  </div>
+                  <div style={{ fontSize:32 }}>{s.icon}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Progress by tech */}
+          <div className="glass-card" style={{ padding:24 }}>
+            <h3 style={{ fontSize:16, fontWeight:700, marginBottom:20 }}>💡 Texnologiya bo'yicha progress</h3>
+            {[
+              { tech:'HTML/CSS', score:82, color:'#FF6584' },
+              { tech:'JavaScript', score:70, color:'#FFD700' },
+              { tech:'React.js', score:65, color:'#4DC3FF' },
+              { tech:'Next.js', score:45, color:'#6C63FF' },
+              { tech:'Bootstrap', score:88, color:'#8B5CF6' },
+            ].map((item,i) => (
+              <div key={i} style={{ marginBottom:14 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', fontSize:14, marginBottom:6 }}>
+                  <span style={{ fontWeight:500 }}>{item.tech}</span>
+                  <span style={{ color:item.color, fontWeight:700 }}>{item.score}%</span>
+                </div>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width:`${item.score}%`, background:`linear-gradient(90deg, ${item.color}88, ${item.color})` }}/>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* History */}
+      {tab === 'history' && (
+        <div className="animate-fadeIn" style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          {mockHistory.map((h,i) => (
+            <div key={i} className="glass-card" style={{ padding:20, display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+              <div style={{ width:48, height:48, borderRadius:12, background:'rgba(108,99,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20 }}>🎯</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontWeight:600, marginBottom:4 }}>{h.level} Intervyu</div>
+                <div style={{ fontSize:13, color:'var(--text-muted)' }}>{h.date} · {h.time}</div>
+              </div>
+              <div style={{
+                fontSize:24, fontWeight:800,
+                color: h.score>=80 ? '#43E97B' : h.score>=60 ? '#4DC3FF' : '#FFB84D'
+              }}>{h.score}/100</div>
+              <button onClick={() => navigate('setup')} className="btn-secondary" style={{ padding:'8px 16px', fontSize:13 }}>
+                Qayta urinish
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Achievements */}
+      {tab === 'achievements' && (
+        <div className="animate-fadeIn">
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px,1fr))', gap:16 }}>
+            {achievements.map((a,i) => (
+              <div key={i} className="glass-card" style={{
+                padding:24, textAlign:'center',
+                opacity: a.earned ? 1 : 0.4,
+                borderColor: a.earned ? 'rgba(255,215,0,0.3)' : 'var(--border)',
+                position:'relative', overflow:'hidden'
+              }}>
+                {a.earned && <div style={{ position:'absolute', top:8, right:8, fontSize:12 }}>✨</div>}
+                <div style={{ fontSize:40, marginBottom:10 }}>{a.icon}</div>
+                <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{a.title}</div>
+                <div style={{ fontSize:12, color:'var(--text-muted)' }}>{a.desc}</div>
+                {a.earned && <div style={{ marginTop:8, fontSize:11, color:'#FFD700', fontWeight:600 }}>QOZONILDI</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================
+// PRICING PAGE
+// ============================================================
+const PricingPage = () => {
+  const { navigate, isPro, setIsPro, user, setAuthModal } = useApp();
+  const [billing, setBilling] = useState('monthly');
+  const [payModal, setPayModal] = useState(null); // 'payme' | 'click'
+  const [payStep, setPayStep] = useState(1);
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [payDone, setPayDone] = useState(false);
+
+  const plans = [
+    {
+      name:'Bepul', price:0, period:'',
+      features:['3 ta intervyu/oy', '5 ta savol/sessiya', 'Basic baholash', 'Top 3 masala'],
+      cta:'Boshlash', color:'var(--text-secondary)', icon:'🆓', popular:false
+    },
+    {
+      name:'PRO', price: billing==='monthly' ? 49000 : 399000, period: billing==='monthly' ? '/oy' : '/yil',
+      features:['Cheksiz intervyu', 'Barcha savollar (500+)', 'AI tahlil + tavsiyalar', 'Barcha masalalar', 'Progress kuzatish', 'Sertifikat', 'Priority support', 'Mock HR intervyu'],
+      cta:'PRO Sotib Olish', color:'var(--primary)', icon:'💎', popular:true
+    },
+    {
+      name:'Team', price: billing==='monthly' ? 199000 : 1590000, period: billing==='monthly' ? '/oy' : '/yil',
+      features:['10 foydalanuvchi', 'Barcha PRO imkoniyatlar', 'Team dashboard', 'Guruh tahlili', 'Custom savollar', 'Onboarding yordam'],
+      cta:"Bog'lanish", color:'#FFB84D', icon:'👥', popular:false
+    },
+  ];
+
+  const handleBuy = (plan) => {
+    if (plan.name === 'Bepul') { navigate('setup'); return; }
+    if (plan.name === 'Team') { alert("Bog'lanish uchun: info@mockinterview.uz"); return; }
+    if (!user) { setAuthModal('register'); return; }
+    setPayModal('choose');
+  };
+
+  const processPayment = (method) => {
+    setPayModal(method);
+    setPayStep(1);
+  };
+
+  const confirmPay = () => {
+    setPayDone(true);
+    setIsPro(true);
+    setTimeout(() => { setPayModal(null); setPayDone(false); }, 3000);
+  };
+
+  return (
+    <div style={{ minHeight:'100vh', paddingTop:80, padding:'80px 20px 60px' }}>
+      {/* Header */}
+      <div style={{ textAlign:'center', marginBottom:48 }}>
+        <h1 style={{ fontSize:'clamp(28px,5vw,52px)', fontWeight:900, marginBottom:12 }}>
+          Oddiy va <span className="gradient-text">Shaffof Narxlar</span>
+        </h1>
+        <p style={{ color:'var(--text-secondary)', fontSize:18, marginBottom:32 }}>
+          O'z darajangizga mos plan tanlang
+        </p>
+        <div style={{ display:'inline-flex', background:'rgba(255,255,255,0.05)', borderRadius:12, padding:4, gap:4 }}>
+          {['monthly', 'yearly'].map(b => (
+            <button key={b} onClick={() => setBilling(b)} style={{
+              padding:'10px 24px', borderRadius:10, border:'none', cursor:'pointer',
+              background: billing===b ? 'var(--primary)' : 'transparent',
+              color: billing===b ? 'white' : 'var(--text-secondary)',
+              fontSize:14, fontWeight:600, transition:'var(--transition)'
+            }}>
+              {b==='monthly' ? 'Oylik' : 'Yillik'}{b==='yearly' && <span style={{ marginLeft:8, fontSize:11, background:'rgba(67,233,123,0.2)', color:'#43E97B', padding:'2px 6px', borderRadius:4 }}>-32%</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Plans */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(280px,1fr))', gap:20, maxWidth:1000, margin:'0 auto 60px' }}>
+        {plans.map((p,i) => (
+          <div key={i} className="glass-card" style={{
+            padding:32,
+            border: p.popular ? '1px solid rgba(108,99,255,0.5)' : '1px solid rgba(255,255,255,0.08)',
+            position:'relative', overflow:'hidden',
+            transform: p.popular ? 'scale(1.02)' : 'scale(1)',
+            boxShadow: p.popular ? '0 20px 60px rgba(108,99,255,0.2)' : ''
+          }}>
+            {p.popular && (
+              <div style={{
+                position:'absolute', top:16, right:-20,
+                background:'linear-gradient(135deg, #6C63FF, #FF6584)',
+                color:'white', padding:'6px 40px', fontSize:11, fontWeight:700,
+                transform:'rotate(45deg)', transformOrigin:'center'
+              }}>POPULAR</div>
+            )}
+            <div style={{ fontSize:36, marginBottom:12 }}>{p.icon}</div>
+            <h3 style={{ fontSize:22, fontWeight:800, marginBottom:8 }}>{p.name}</h3>
+            <div style={{ marginBottom:24 }}>
+              <span style={{ fontSize:40, fontWeight:900, color:p.color }}>
+                {p.price === 0 ? 'Bepul' : p.price.toLocaleString('uz-UZ')}
+              </span>
+              {p.price > 0 && <span style={{ color:'var(--text-muted)', fontSize:14 }}> so'm{p.period}</span>}
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:28 }}>
+              {p.features.map((f,j) => (
+                <div key={j} style={{ display:'flex', gap:8, fontSize:14, color:'var(--text-secondary)' }}>
+                  <span style={{ color:'#43E97B', flexShrink:0 }}>✓</span>
+                  {f}
+                </div>
+              ))}
+            </div>
+            <button onClick={() => handleBuy(p)}
+              className={p.popular ? 'btn-primary' : 'btn-secondary'}
+              style={{ width:'100%', justifyContent:'center', padding:'14px', fontSize:15 }}>
+              {isPro && p.name==='PRO' ? '✅ Faol' : p.cta}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Payment Method Modal */}
+      {payModal === 'choose' && (
+        <div className="modal-overlay" onClick={() => setPayModal(null)}>
+          <div className="modal-box" onClick={e=>e.stopPropagation()} style={{ maxWidth:400 }}>
+            <h3 style={{ fontSize:20, fontWeight:700, marginBottom:20, textAlign:'center' }}>To'lov usulini tanlang</h3>
+            <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <button onClick={() => processPayment('payme')} style={{
+                background:'linear-gradient(135deg, #00AABB, #00CCDD)', border:'none', borderRadius:14,
+                padding:'16px 24px', display:'flex', alignItems:'center', gap:16, cursor:'pointer', transition:'var(--transition)'
+              }} onMouseEnter={e=>e.currentTarget.style.opacity='0.9'} onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+                <div style={{ width:44, height:44, borderRadius:10, background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, fontWeight:900, color:'#00AABB' }}>P</div>
+                <div style={{ textAlign:'left' }}>
+                  <div style={{ color:'white', fontWeight:700, fontSize:16 }}>Payme</div>
+                  <div style={{ color:'rgba(255,255,255,0.8)', fontSize:12 }}>Payme kartasi orqali to'lash</div>
+                </div>
+              </button>
+              <button onClick={() => processPayment('click')} style={{
+                background:'linear-gradient(135deg, #2196F3, #1565C0)', border:'none', borderRadius:14,
+                padding:'16px 24px', display:'flex', alignItems:'center', gap:16, cursor:'pointer', transition:'var(--transition)'
+              }}>
+                <div style={{ width:44, height:44, borderRadius:10, background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, fontWeight:900, color:'#2196F3' }}>C</div>
+                <div style={{ textAlign:'left' }}>
+                  <div style={{ color:'white', fontWeight:700, fontSize:16 }}>Click</div>
+                  <div style={{ color:'rgba(255,255,255,0.8)', fontSize:12 }}>Click ilovasi orqali to'lash</div>
+                </div>
+              </button>
+            </div>
+            <button onClick={() => setPayModal(null)} style={{ marginTop:16, width:'100%', background:'transparent', border:'1px solid var(--border)', color:'var(--text-muted)', padding:'12px', borderRadius:10, cursor:'pointer' }}>
+              Bekor qilish
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Payme / Click Modal */}
+      {(payModal === 'payme' || payModal === 'click') && !payDone && (
+        <div className="modal-overlay" onClick={() => setPayModal(null)}>
+          <div className="modal-box" onClick={e=>e.stopPropagation()} style={{ maxWidth:420 }}>
+            <div style={{ textAlign:'center', marginBottom:24 }}>
+              <div style={{ fontSize:40, marginBottom:8 }}>{payModal==='payme' ? '💳' : '📱'}</div>
+              <h3 style={{ fontSize:20, fontWeight:700 }}>{payModal==='payme' ? 'Payme' : 'Click'} orqali to'lash</h3>
+              <p style={{ color:'#43E97B', fontSize:16, fontWeight:700, marginTop:8 }}>
+                {billing==='monthly' ? '49,000' : '399,000'} so'm
+              </p>
+            </div>
+
+            {payStep === 1 && (
+              <div>
+                <label style={{ display:'block', marginBottom:8, fontSize:14, color:'var(--text-secondary)' }}>
+                  {payModal==='payme' ? 'Karta raqami' : 'Telefon raqam'}
+                </label>
+                <input className="input-field" type={payModal==='payme' ? 'text' : 'tel'}
+                  placeholder={payModal==='payme' ? '0000 0000 0000 0000' : '+998 XX XXX XX XX'}
+                  value={phone} onChange={e=>setPhone(e.target.value)}
+                  style={{ marginBottom:16 }} />
+                {payModal === 'payme' && (
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:16 }}>
+                    <input className="input-field" placeholder="MM/YY" />
+                    <input className="input-field" placeholder="CVV" type="password" />
+                  </div>
+                )}
+                <button onClick={() => setPayStep(2)} className="btn-primary" style={{ width:'100%', justifyContent:'center' }}>
+                  Tasdiqlash kodini yuborish →
+                </button>
+              </div>
+            )}
+
+            {payStep === 2 && (
+              <div style={{ textAlign:'center' }}>
+                <p style={{ color:'var(--text-secondary)', fontSize:14, marginBottom:20 }}>
+                  {phone} ga SMS yuborildi. 6 xonali kodni kiriting:
+                </p>
+                <div style={{ display:'flex', gap:8, justifyContent:'center', marginBottom:20 }}>
+                  {[...Array(6)].map((_,i) => (
+                    <input key={i} style={{
+                      width:44, height:52, textAlign:'center', fontSize:22, fontWeight:700,
+                      background:'rgba(255,255,255,0.05)', border:'1px solid var(--border)',
+                      borderRadius:10, color:'white', outline:'none'
+                    }} maxLength={1} />
+                  ))}
+                </div>
+                <button onClick={confirmPay} className="btn-success" style={{ width:'100%', justifyContent:'center', padding:'14px' }}>
+                  ✅ To'lovni Tasdiqlash
+                </button>
+                <button onClick={() => setPayStep(1)} style={{ marginTop:10, background:'transparent', border:'none', color:'var(--text-muted)', cursor:'pointer', fontSize:13 }}>
+                  ← Orqaga
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Success */}
+      {payDone && (
+        <div className="modal-overlay">
+          <div className="modal-box animate-bounceIn" style={{ textAlign:'center', maxWidth:380 }}>
+            <div style={{ fontSize:80 }}>🎉</div>
+            <h3 style={{ fontSize:24, fontWeight:800, margin:'16px 0 8px', color:'#43E97B' }}>
+              To'lov muvaffaqiyatli!
+            </h3>
+            <p style={{ color:'var(--text-secondary)' }}>PRO versiya faollashtirildi. Xush kelibsiz!</p>
+          </div>
+        </div>
+      )}
+
+      {/* FAQ */}
+      <div style={{ maxWidth:720, margin:'0 auto' }}>
+        <h2 style={{ textAlign:'center', fontSize:28, fontWeight:800, marginBottom:32 }}>Ko'p so'raladigan savollar</h2>
+        {[
+          { q:"Bepul versiyada nima bor?", a:"Oyiga 3 ta intervyu, 5 ta savol va asosiy baholash kiradi." },
+          { q:"To'lovni bekor qilsam bo'ladimi?", a:"Ha, istalgan vaqt hech qanday jarimosiz bekor qilish mumkin." },
+          { q:"Sertifikat berasilarsizmi?", a:"PRO obunachilarga har yakunlangan intervyu uchun PDF sertifikat beriladi." },
+          { q:"Qanday to'lov usullari qo'llab-quvvatlanadi?", a:"Payme va Click orqali o'zbek bank kartalariga to'lash mumkin." },
+        ].map((faq,i) => (
+          <div key={i} className="glass-card" style={{ padding:20, marginBottom:12, cursor:'pointer' }}>
+            <div style={{ fontWeight:600, marginBottom:6 }}>❓ {faq.q}</div>
+            <div style={{ fontSize:14, color:'var(--text-secondary)' }}>{faq.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+
+// ============================================================
+// LEADERBOARD PAGE
+// ============================================================
+const LeaderboardPage = () => {
+  const [filter, setFilter] = useState('all');
+  const leaders = [
+    { rank:1, name:'Abdulloh K.', score:97, level:'Senior', badge:'🥇', avatar:'A', interviews:24 },
+    { rank:2, name:'Zulfiya M.', score:94, level:'Senior', badge:'🥈', avatar:'Z', interviews:18 },
+    { rank:3, name:'Bobur T.', score:91, level:'Middle', badge:'🥉', avatar:'B', interviews:31 },
+    { rank:4, name:'Nodira S.', score:88, level:'Senior', badge:'', avatar:'N', interviews:15 },
+    { rank:5, name:'Jasur R.', score:86, level:'Middle', badge:'', avatar:'J', interviews:22 },
+    { rank:6, name:'Kamola A.', score:83, level:'Junior', badge:'', avatar:'K', interviews:41 },
+    { rank:7, name:'Sherzod U.', score:81, level:'Middle', badge:'', avatar:'S', interviews:19 },
+    { rank:8, name:'Dilnoza P.', score:79, level:'Junior', badge:'', avatar:'D', interviews:28 },
+    { rank:9, name:'Ravshan N.', score:76, level:'Middle', badge:'', avatar:'R', interviews:12 },
+    { rank:10, name:'Muhammadali B.', score:74, level:'Junior', badge:'', avatar:'M', interviews:35 },
+  ];
+
+  return (
+    <div style={{ minHeight:'100vh', paddingTop:80, padding:'80px 20px 60px', maxWidth:800, margin:'0 auto' }}>
+      <div style={{ textAlign:'center', marginBottom:48 }}>
+        <h1 style={{ fontSize:'clamp(28px,5vw,48px)', fontWeight:900, marginBottom:12 }}>
+          🏆 <span className="gradient-text">Reyting Jadvali</span>
+        </h1>
+        <p style={{ color:'var(--text-secondary)' }}>Eng yaxshi natijalar ko'rsatgan dasturchlar</p>
+      </div>
+
+      {/* Top 3 Podium */}
+      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'center', gap:12, marginBottom:48 }}>
+        {[leaders[1], leaders[0], leaders[2]].map((l,i) => (
+          <div key={i} style={{ textAlign:'center', flex:1, maxWidth:180 }}>
+            <div style={{ fontSize:40, marginBottom:8 }}>{l.badge || '🏅'}</div>
+            <div style={{
+              width:64, height:64, borderRadius:'50%', margin:'0 auto 8px',
+              background: i===1 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : i===0 ? 'linear-gradient(135deg, #C0C0C0, #A9A9A9)' : 'linear-gradient(135deg, #CD7F32, #A0522D)',
+              display:'flex', alignItems:'center', justifyContent:'center', fontSize:24, fontWeight:700, color:'#0A0B14'
+            }}>{l.avatar}</div>
+            <div style={{ fontWeight:700, fontSize:14, marginBottom:4 }}>{l.name}</div>
+            <div style={{ fontSize:18, fontWeight:900, color: i===1 ? '#FFD700' : i===0 ? '#C0C0C0' : '#CD7F32' }}>{l.score}</div>
+            <div style={{
+              height: i===1 ? 120 : i===0 ? 80 : 60, marginTop:8,
+              background: i===1 ? 'linear-gradient(180deg, rgba(255,215,0,0.2), rgba(255,215,0,0.05))' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${i===1 ? 'rgba(255,215,0,0.3)' : 'var(--border)'}`,
+              borderBottom:'none', borderRadius:'8px 8px 0 0'
+            }}/>
+          </div>
+        ))}
+      </div>
+
+      {/* Full List */}
+      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+        {leaders.map((l,i) => (
+          <div key={i} className="glass-card" style={{
+            padding:'16px 20px', display:'flex', alignItems:'center', gap:16,
+            borderColor: i < 3 ? `rgba(255,215,0,${0.3-i*0.08})` : ''
+          }}>
+            <div style={{ width:36, textAlign:'center', fontWeight:800, fontSize:16, color: i===0?'#FFD700':i===1?'#C0C0C0':i===2?'#CD7F32':'var(--text-muted)' }}>
+              {i < 3 ? ['🥇','🥈','🥉'][i] : `#${l.rank}`}
+            </div>
+            <div style={{ width:40, height:40, borderRadius:'50%', background:'linear-gradient(135deg, #6C63FF, #FF6584)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700 }}>
+              {l.avatar}
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontWeight:600, fontSize:15 }}>{l.name}</div>
+              <div style={{ fontSize:12, color:'var(--text-muted)' }}>{l.interviews} ta intervyu</div>
+            </div>
+            <div className="badge" style={{
+              background: l.level==='Senior' ? 'rgba(255,184,77,0.15)' : l.level==='Middle' ? 'rgba(77,195,255,0.15)' : 'rgba(67,233,123,0.15)',
+              color: l.level==='Senior' ? '#FFB84D' : l.level==='Middle' ? '#4DC3FF' : '#43E97B',
+            }}>{l.level}</div>
+            <div style={{ fontSize:22, fontWeight:900, color: l.score>=90 ? '#43E97B' : l.score>=80 ? '#4DC3FF' : 'var(--text-primary)', minWidth:48, textAlign:'right' }}>
+              {l.score}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
+// MAIN APP ROUTER
+// ============================================================
+const AppRouter = () => {
+  const { page } = useApp();
+  const routes = {
+    landing: <LandingPage />,
+    setup: <SetupPage />,
+    'voice-interview': <VoiceInterviewPage />,
+    'coding-interview': <CodingInterviewPage />,
+    results: <ResultsPage />,
+    dashboard: <DashboardPage />,
+    pricing: <PricingPage />,
+    leaderboard: <LeaderboardPage />,
+  };
+  return routes[page] || <LandingPage />;
+};
+
+// ============================================================
+// ROOT APP
+// ============================================================
+const App = () => (
+  <AppProvider>
+    <GlobalStyles />
+    <Navbar />
+    <AuthModal />
+    <AppRouter />
+  </AppProvider>
+);
+
+// Mount
+const rootEl = document.getElementById('root');
+ReactDOM.createRoot(rootEl).render(<App />);
+</script>
 </body>
 </html>
