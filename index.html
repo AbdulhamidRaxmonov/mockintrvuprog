@@ -499,7 +499,7 @@ function go(page) {
   // render page
   const renders = {
     landing: renderLanding,
-    setup: renderSetup,
+    setup: ()=>{ S.setupStep=1; S.selectedLevel=null; S.selectedDir=null; renderSetup(); },
     voice: renderVoice,
     coding: renderCoding,
     results: renderResults,
@@ -729,8 +729,12 @@ function renderLanding(){
 // SETUP PAGE
 // ===================================================
 function renderSetup(){
-  if(S.selectedLevel) S.setupStep=2;
+  // Always reset when entering setup fresh from landing
+  if(S.page === 'setup' && S.setupStep === 1){
+    // keep as is
+  }
   const page=$id('page-setup');
+  if(!page) return;
   page.innerHTML=`<div class="setup-wrap">
   <div class="steps-row">
     ${['Daraja',"Yo'nalish",'Boshlash'].map((s,i)=>`
@@ -741,12 +745,13 @@ function renderSetup(){
       ${i<2?`<div class="step-line" style="background:${S.setupStep>i+1?'var(--pr)':'var(--br)'}"></div>`:''}`).join('')}
   </div>
   <div id="setup-content"></div></div>`;
-  renderSetupStep();
+  // Wait for DOM update
+  setTimeout(()=>{ renderSetupStep(); }, 0);
 }
 
 function renderSetupStep(){
   const c=$id('setup-content');
-  if(S.setupStep===1){
+  if(!c){ setTimeout(()=>renderSetupStep(),50); return; }
     c.innerHTML=`
     <h2 style="font-size:26px;font-weight:800;text-align:center;margin-bottom:8px">Darajangizni tanlang</h2>
     <p style="color:var(--t2);text-align:center;margin-bottom:28px">Sizning tajribangizga mos darajani belgilang</p>
@@ -873,11 +878,22 @@ function selectDir(id){
 }
 }
 function startInterview(){
-  S.interview.level=S.selectedLevel||'junior';
-  S.interview.direction=S.selectedDir||'fullstack';
-  S.session={ answers:[], scores:[], voiceScore:0, codingScore:0, total:0, timeSpent:0 };
-  S.vi={ qIndex:0, phase:'intro', transcript:'', feedback:null, timer:0, totalTime:0, scores:[] };
-  go('voice');
+  S.interview.level = S.selectedLevel || 'junior';
+  S.interview.direction = S.selectedDir || 'fullstack';
+  S.session = { answers:[], scores:[], voiceScore:0, codingScore:0, total:0, timeSpent:0 };
+  S.vi = { qIndex:0, phase:'intro', transcript:'', feedback:null, timer:0, totalTime:0, scores:[] };
+  // Don't reset setup state here so go('setup') reset handles it
+  const lvl = S.selectedLevel;
+  const dir = S.selectedDir;
+  // Navigate to voice directly without resetting setup
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el = document.getElementById('page-voice');
+  if(el) el.classList.add('active');
+  S.page = 'voice';
+  window.scrollTo({top:0,behavior:'instant'});
+  const nav = document.getElementById('nav');
+  if(nav) nav.style.display='none';
+  renderVoice();
 }
 </script>
 
