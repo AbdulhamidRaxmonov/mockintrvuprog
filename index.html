@@ -768,12 +768,12 @@ function renderSetupStep(){
               ${topics.map(t=>`<span style="font-size:11px;background:rgba(255,255,255,.05);padding:3px 8px;border-radius:4px;color:var(--t3)">${t}</span>`).join('')}
             </div>
           </div>
-          <div style="width:22px;height:22px;border-radius:50%;border:2px solid ${S.selectedLevel===id?col:'var(--br)'};background:${S.selectedLevel===id?col:'transparent'};display:flex;align-items:center;justify-content:center;font-size:12px">${S.selectedLevel===id?'✓':''}</div>
+          <div class="lv-radio" style="width:22px;height:22px;border-radius:50%;border:2px solid ${S.selectedLevel===id?col:'var(--br)'};background:${S.selectedLevel===id?col:'transparent'};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0">${S.selectedLevel===id?'✓':''}</div>
         </div>
       </div>`).join('')}
     </div>
     <div style="margin-top:28px;display:flex;justify-content:flex-end">
-      <button class="btn btn-pr" ${!S.selectedLevel?'disabled':''} onclick="S.setupStep=2;renderSetup()" style="padding:13px 40px">Keyingisi →</button>
+      <button class="btn btn-pr" id="lv-next-btn" onclick="goToStep2()" style="padding:13px 40px;opacity:${S.selectedLevel?1:.45};cursor:${S.selectedLevel?'pointer':'not-allowed'}">Keyingisi →</button>
     </div>`;
   }
   else if(S.setupStep===2){
@@ -785,8 +785,8 @@ function renderSetupStep(){
          ['react','⚛️','React Specialist','React va ekotizim'],
          ['next','▲','Next.js Developer','Next.js va server components'],
          ['vanilla','⚡','Vanilla JS','HTML, CSS, JavaScript']].map(([id,ic,lb,desc])=>`
-        <div class="card sel-card" onclick="selectDir('${id}')"
-          style="padding:22px;border-color:${S.selectedDir===id?'var(--pr)':'rgba(255,255,255,.08)'};background:${S.selectedDir===id?'rgba(108,99,255,.1)':''}">
+        <div class="card sel-card" id="dir-card-${id}" onclick="selectDir('${id}')"
+          style="padding:22px;border-color:${S.selectedDir===id?'var(--pr)':'rgba(255,255,255,.08)'};background:${S.selectedDir===id?'rgba(108,99,255,.1)':'transparent'}">
           <div style="font-size:30px;margin-bottom:10px">${ic}</div>
           <div style="font-weight:700;font-size:15px;margin-bottom:4px">${lb}</div>
           <div style="font-size:13px;color:var(--t3)">${desc}</div>
@@ -794,7 +794,7 @@ function renderSetupStep(){
     </div>
     <div style="margin-top:28px;display:flex;justify-content:space-between">
       <button class="btn btn-sc" onclick="S.setupStep=1;renderSetup()">← Orqaga</button>
-      <button class="btn btn-pr" ${!S.selectedDir?'disabled':''} onclick="S.setupStep=3;renderSetup()" style="padding:13px 40px">Keyingisi →</button>
+      <button class="btn btn-pr" id="dir-next-btn" onclick="goToStep3()" style="padding:13px 40px;opacity:${S.selectedDir?1:.45};cursor:${S.selectedDir?'pointer':'not-allowed'}">Keyingisi →</button>
     </div>`;
   }
   else {
@@ -827,13 +827,50 @@ function renderSetupStep(){
   }
 }
 
+function goToStep2(){
+  if(!S.selectedLevel) return;
+  S.setupStep=2;
+  renderSetup();
+}
 function selectLevel(id){
   S.selectedLevel=id;
-  renderSetupStep();
+  const cols={junior:'#43E97B',middle:'#4DC3FF',senior:'#FFB84D'};
+  ['junior','middle','senior'].forEach(lv=>{
+    const card=document.getElementById('lv-'+lv);
+    if(!card) return;
+    const c=cols[lv];
+    card.style.borderColor = lv===id ? c : 'rgba(255,255,255,.08)';
+    card.style.background  = lv===id ? c+'11' : 'transparent';
+    // update radio circle
+    const radio=card.querySelector('.lv-radio');
+    if(radio){
+      radio.style.background    = lv===id ? c : 'transparent';
+      radio.style.borderColor   = lv===id ? c : 'var(--br)';
+      radio.textContent         = lv===id ? '✓' : '';
+    }
+  });
+  const btn=document.getElementById('lv-next-btn');
+  if(btn){ btn.style.opacity='1'; btn.style.cursor='pointer'; }
+}
+}
+function goToStep3(){
+  if(!S.selectedDir) return;
+  S.setupStep=3;
+  renderSetup();
 }
 function selectDir(id){
   S.selectedDir=id;
-  renderSetupStep();
+  // Update card styles directly without full re-render
+  ['fullstack','react','next','vanilla'].forEach(d=>{
+    const card=document.getElementById('dir-card-'+d);
+    if(!card) return;
+    card.style.borderColor = d===id ? 'var(--pr)' : 'rgba(255,255,255,.08)';
+    card.style.background  = d===id ? 'rgba(108,99,255,.1)' : 'transparent';
+  });
+  // Enable next button
+  const btn=document.getElementById('dir-next-btn');
+  if(btn){ btn.style.opacity='1'; btn.style.cursor='pointer'; }
+}
 }
 function startInterview(){
   S.interview.level=S.selectedLevel||'junior';
